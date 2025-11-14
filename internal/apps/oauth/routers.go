@@ -112,6 +112,7 @@ type BasicUserInfo struct {
 	CommunityBalance decimal.Decimal  `json:"community_balance"`
 	AvailableBalance decimal.Decimal  `json:"available_balance"`
 	PayScore         int64            `json:"pay_score"`
+	IsAdmin          bool             `json:"is_admin"`
 	RemainQuota      int64            `json:"remain_quota"`
 	PayLevel         model.PayLevel   `json:"pay_level"`
 	DailyLimit       *int64           `json:"daily_limit"`
@@ -146,6 +147,7 @@ func UserInfo(c *gin.Context) {
 			CommunityBalance: user.CommunityBalance,
 			AvailableBalance: user.AvailableBalance,
 			PayScore:         user.PayScore,
+			IsAdmin:          user.IsAdmin,
 			RemainQuota:      0,
 			PayLevel:         payConfig.Level,
 			DailyLimit:       payConfig.DailyLimit,
