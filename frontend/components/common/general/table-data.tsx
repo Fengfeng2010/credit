@@ -26,16 +26,16 @@ export function TransactionDataTable({ transactions }: { transactions: Order[] }
           <TableHeader>
             <TableRow className="border-b border-dashed">
               <TableHead className="whitespace-nowrap w-[120px]">名称</TableHead>
-              <TableHead className="whitespace-nowrap text-center min-w-[160px]">订单号</TableHead>
-              <TableHead className="whitespace-nowrap text-center w-[120px]">商户订单号</TableHead>
-              <TableHead className="whitespace-nowrap text-right min-w-[80px]">金额</TableHead>
-              <TableHead className="whitespace-nowrap text-center w-[80px]">类型</TableHead>
-              <TableHead className="whitespace-nowrap text-center w-[80px]">状态</TableHead>
-              <TableHead className="whitespace-nowrap text-center min-w-[100px]">交易双方</TableHead>
-              <TableHead className="whitespace-nowrap text-center min-w-[50px]">商户</TableHead>
-              <TableHead className="whitespace-nowrap text-center w-[120px]">创建时间</TableHead>
-              <TableHead className="whitespace-nowrap text-center w-[120px]">过期时间</TableHead>
-              <TableHead className="whitespace-nowrap text-center w-[120px]">交易时间</TableHead>
+              <TableHead className="whitespace-nowrap text-center min-w-[60px]">金额</TableHead>
+              <TableHead className="whitespace-nowrap text-center min-w-[50px]">类型</TableHead>
+              <TableHead className="whitespace-nowrap text-center min-w-[50px]">状态</TableHead>
+              <TableHead className="whitespace-nowrap text-center min-w-[80px]">资金流</TableHead>
+              <TableHead className="whitespace-nowrap text-center min-w-[80px]">商户名</TableHead>
+              <TableHead className="whitespace-nowrap text-left min-w-[120px]">订单号</TableHead>
+              <TableHead className="whitespace-nowrap text-left min-w-[120px]">商户订单号</TableHead>
+              <TableHead className="whitespace-nowrap text-left w-[120px]">创建时间</TableHead>
+              <TableHead className="whitespace-nowrap text-left w-[120px]">交易时间</TableHead>
+              <TableHead className="whitespace-nowrap text-left w-[120px]">订单过期时间</TableHead>
               <TableHead className="sticky right-0 whitespace-nowrap text-center bg-background shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.1)] w-[150px]">操作</TableHead>
             </TableRow>
           </TableHeader>
@@ -66,36 +66,30 @@ function TransactionTableRow({ order }: { order: Order }) {
   )
 
   return (
-    <TableRow className="h-8 border-b border-dashed">
-      <TableCell className="text-xs font-medium whitespace-nowrap py-1">
+    <TableRow className="h-6 border-b border-dashed">
+      <TableCell className="text-[11px] font-medium whitespace-nowrap py-1">
         {order.order_name}
       </TableCell>
-      <TableCell className="font-mono text-xs text-center py-1">
-        {order.order_no}
-      </TableCell>
-      <TableCell className="font-mono text-xs text-center py-1">
-        {order.merchant_order_no || '-'}
-      </TableCell>
-      <TableCell className="whitespace-nowrap text-right py-1">
+      <TableCell className="text-[11px] font-medium whitespace-nowrap text-center py-1">
         {getAmountDisplay(order.amount)}
       </TableCell>
-      <TableCell className="whitespace-nowrap text-center py-1">
+      <TableCell className="text-[11px] font-medium whitespace-nowrap text-center py-1">
         <Badge
           variant="secondary"
-          className={`text-[11px] px-1 ${typeConfig[order.type].color}`}
+          className={`text-[10px] px-1 ${typeConfig[order.type].color}`}
         >
           {typeConfig[order.type].label}
         </Badge>
       </TableCell>
-      <TableCell className="whitespace-nowrap text-center py-1">
+      <TableCell className="text-[11px] font-medium whitespace-nowrap text-center py-1">
         <Badge
           variant="secondary"
-          className={`text-[11px] px-1 ${statusConfig[order.status].color}`}
+          className={`text-[10px] px-1 ${statusConfig[order.status].color}`}
         >
           {statusConfig[order.status].label}
         </Badge>
       </TableCell>
-      <TableCell className="whitespace-nowrap text-center py-1">
+      <TableCell className="text-[11px] font-medium whitespace-nowrap text-center py-1">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -132,17 +126,23 @@ function TransactionTableRow({ order }: { order: Order }) {
           </Tooltip>
         </TooltipProvider>
       </TableCell>
-      <TableCell className="text-xs text-center py-1">
+      <TableCell className="text-[11px] font-medium text-center py-1">
         {order.app_name || '-'}
       </TableCell>
-      <TableCell className="text-xs text-center py-1">
+      <TableCell className="font-mono text-[11px] font-medium text-left py-1">
+        {order.order_no}
+      </TableCell>
+      <TableCell className="font-mono text-[11px] font-medium text-left py-1">
+        {order.merchant_order_no || '-'}
+      </TableCell>
+      <TableCell className="text-[11px] font-medium text-left py-1">
         {formatDateTime(order.created_at)}
       </TableCell>
-      <TableCell className="text-xs text-center py-1">
-        {formatDateTime(order.expires_at)}
-      </TableCell>
-      <TableCell className="text-xs text-center py-1">
+      <TableCell className="text-[11px] font-medium text-left py-1">
         {(order.status === 'success' || order.status === 'refund') ? formatDateTime(order.trade_time) : '-'}
+      </TableCell>
+      <TableCell className="text-[11px] font-medium text-left py-1">
+        {formatDateTime(order.expires_at)}
       </TableCell>
       <TableCell className="sticky right-0 whitespace-nowrap text-center bg-background shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.1)] py-1">
         <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
@@ -186,7 +186,6 @@ export function TransactionTableList({
     return (
       <LoadingStateWithBorder
         icon={ListRestart}
-        description="数据加载中"
       />
     )
   }
@@ -227,11 +226,6 @@ export function TransactionTableList({
         </Button>
       )}
 
-      {currentPage >= totalPages && total > 0 && (
-        <div className="pt-2 text-center text-xs text-muted-foreground">
-          已加载全部 {total} 条记录
-        </div>
-      )}
     </div>
   )
 }

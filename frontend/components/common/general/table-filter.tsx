@@ -165,6 +165,7 @@ export function TableFilter({
             selectedValues={selectedTypes}
             options={typeConfig}
             onToggleValue={toggleType}
+            onChange={onTypeChange}
           />
         )}
 
@@ -174,6 +175,7 @@ export function TableFilter({
             selectedValues={selectedStatuses}
             options={statusConfig}
             onToggleValue={toggleStatus}
+            onChange={onStatusChange}
           />
         )}
 
@@ -193,9 +195,9 @@ export function TableFilter({
               variant="ghost"
               size="sm"
               onClick={onClearAll}
-              className="h-6 px-2 lg:px-3 text-xs font-medium text-muted-foreground hover:text-foreground"
+              className="h-5 px-2 lg:px-3 text-[11px] font-medium text-muted-foreground hover:text-foreground"
             >
-              <X className="size-3 mr-1" />
+              <X className="size-3" />
               清空筛选
             </Button>
           </>
@@ -208,11 +210,12 @@ export function TableFilter({
 /**
  * 可复用的筛选选择器组件
  */
-function FilterSelect<T extends string>({ label, selectedValues, options, onToggleValue }: {
+function FilterSelect<T extends string>({ label, selectedValues, options, onToggleValue, onChange }: {
   label: string
   selectedValues: T[]
   options: Record<T, { label: string; color: string }>
   onToggleValue: (value: T) => void
+  onChange?: (values: T[]) => void
 }) {
   return (
     <DropdownMenu>
@@ -221,41 +224,21 @@ function FilterSelect<T extends string>({ label, selectedValues, options, onTogg
           variant="outline"
           size="sm"
           className={cn(
-            "h-6 border-dashed text-xs font-medium shadow-none",
-            selectedValues.length > 0 && "bg-accent/50 border-solid border-primary/20"
+            "h-5 border-dashed text-[10px] font-medium shadow-none focus-visible:ring-0",
+            selectedValues.length > 0 && "bg-blue-50 border-primary/20"
           )}
         >
-          <Filter className="mr-1 size-3 text-muted-foreground" />
+          <Filter className="size-3" />
           {label}
           {selectedValues.length > 0 && (
             <>
-              <Separator orientation="vertical" className="mx-1 h-4" />
+              <Separator orientation="vertical" className="mx-1" />
               <Badge
                 variant="secondary"
-                className="rounded-sm px-1 font-normal lg:hidden"
+                className="text-[10px] h-3 px-1 rounded-full bg-primary text-primary-foreground"
               >
                 {selectedValues.length}
               </Badge>
-              <div className="hidden space-x-1 lg:flex">
-                {selectedValues.length > 2 ? (
-                  <Badge
-                    variant="secondary"
-                    className="h-4 rounded-sm px-1 font-normal text-[10px]"
-                  >
-                    已选 {selectedValues.length} 项
-                  </Badge>
-                ) : (
-                  selectedValues.map((value) => (
-                    <Badge
-                      key={value}
-                      variant="secondary"
-                      className="h-4 rounded-sm px-1 font-normal text-[10px]"
-                    >
-                      {options[value].label}
-                    </Badge>
-                  ))
-                )}
-              </div>
             </>
           )}
         </Button>
@@ -286,7 +269,7 @@ function FilterSelect<T extends string>({ label, selectedValues, options, onTogg
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onSelect={() => selectedValues.forEach(v => onToggleValue(v))}
+              onSelect={() => onChange?.([])}
               className="h-5 justify-center text-center text-xs font-bold"
             >
               清除筛选
@@ -331,11 +314,11 @@ function TimeRangeFilter({
           variant="outline"
           size="sm"
           className={cn(
-            "h-6 border-dashed text-xs font-medium shadow-none",
-            (selectedQuickSelection || selectedTimeRange) && "bg-accent/50 border-solid border-primary/20"
+            "h-5 border-dashed text-[10px] font-medium shadow-none focus-visible:ring-0",
+            (selectedQuickSelection || selectedTimeRange) && "bg-blue-50 border-primary/20"
           )}
         >
-          <CalendarIcon className="mr-2 size-3 text-muted-foreground" />
+          <CalendarIcon className="mr-1 size-3" />
           {selectedQuickSelection || (selectedTimeRange ? "自定义时间" : "时间范围")}
         </Button>
       </DropdownMenuTrigger>

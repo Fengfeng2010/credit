@@ -423,7 +423,7 @@ export function LoginPage() {
                 }}
                 className="text-6xl font-bold dark:text-white text-center"
               >
-                LINUX DO <span className="text-7xl italic font-serif text-blue-800 dark:text-blue-200">PAY</span>
+                LINUX DO <span className="text-7xl italic font-serif text-blue-600 dark:text-blue-200">PAY</span>
               </motion.div>
               <AnimatePresence mode="wait">
                 <motion.div
