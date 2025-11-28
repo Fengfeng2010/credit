@@ -59,14 +59,13 @@ export function LoginPage() {
     setConfirmPayKey(numericValue)
   }
 
-  /* 标语 */
   const slogans = [
     "Fast and convenient payment solution.",
     "Pay your bills with ease and security.",
     "Secure transactions, anytime, anywhere.",
     "Your trusted payment partner."
   ]
-  /* 当前标语索引 */
+  
   const [currentSloganIndex, setCurrentSloganIndex] = useState(0)
 
   /* 定时更新标语 */
@@ -392,7 +391,7 @@ export function LoginPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.3 }}
-                className="w-full max-w-xs"
+                className="w-full max-w-sm"
               >
                 <LoginForm />
               </motion.div>
