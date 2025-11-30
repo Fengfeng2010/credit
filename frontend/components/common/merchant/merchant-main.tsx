@@ -19,7 +19,7 @@ import { useMerchant } from "@/contexts/merchant-context"
  * 负责组装商户中心的各个子组件
  */
 export function MerchantMain() {
-  const { apiKeys, error, loadAPIKeys, createAPIKey, updateAPIKey, deleteAPIKey } = useMerchant()
+  const { apiKeys, loading, error, loadAPIKeys, createAPIKey, updateAPIKey, deleteAPIKey } = useMerchant()
   const [selectedKeyId, setSelectedKeyId] = useState<number | null>(null)
 
   const selectedKey = apiKeys.find(key => key.id === selectedKeyId) || null
@@ -79,8 +79,8 @@ export function MerchantMain() {
     }
   }
 
-  /* 等待加载 API Keys */
-  if (apiKeys.length === 0) {
+  /* 正在加载中 */
+  if (loading) {
     return <LoadingPage text="商户中心" badgeText="商户" />
   }
 
@@ -110,6 +110,7 @@ export function MerchantMain() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
+          className="flex items-center justify-center min-h-[60vh]"
         >
           <ErrorDisplay
             title="加载失败"
@@ -124,6 +125,7 @@ export function MerchantMain() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
+          className="flex items-center justify-center min-h-[60vh]"
         >
           <EmptyState
             title="商户应用列表为空"
