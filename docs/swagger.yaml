@@ -142,8 +142,12 @@ definitions:
     properties:
       amount:
         type: number
+      merchant_order_no:
+        type: string
       order_name:
         maxLength: 64
+        type: string
+      payment_type:
         type: string
       remark:
         maxLength: 200
@@ -590,31 +594,6 @@ paths:
             $ref: '#/definitions/util.ResponseAny'
       tags:
       - payment
-  /api/v1/merchant/payment/orders:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Basic {ClientID}:{ClientSecret}
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/payment.CreateOrderRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/util.ResponseAny'
-      tags:
-      - payment
   /api/v1/oauth/callback:
     post:
       parameters:
@@ -823,4 +802,24 @@ paths:
             $ref: '#/definitions/util.ResponseAny'
       tags:
       - user
+  /pay/submit.php:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/payment.CreateOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.ResponseAny'
+      tags:
+      - payment
 swagger: "2.0"

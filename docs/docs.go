@@ -530,45 +530,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/merchant/payment/orders": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "payment"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Basic {ClientID}:{ClientSecret}",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/payment.CreateOrderRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/util.ResponseAny"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/oauth/callback": {
             "post": {
                 "produces": [
@@ -904,6 +865,38 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/pay/submit.php": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "payment"
+                ],
+                "parameters": [
+                    {
+                        "description": "request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/payment.CreateOrderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.ResponseAny"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1110,9 +1103,15 @@ const docTemplate = `{
                 "amount": {
                     "type": "number"
                 },
+                "merchant_order_no": {
+                    "type": "string"
+                },
                 "order_name": {
                     "type": "string",
                     "maxLength": 64
+                },
+                "payment_type": {
+                    "type": "string"
                 },
                 "remark": {
                     "type": "string",
