@@ -139,7 +139,7 @@ func (u *User) EnqueueBadgeScoreTask(ctx context.Context) {
 	payload, _ := json.Marshal(map[string]interface{}{
 		"user_id": u.ID,
 	})
-	if _, err := schedule.AsynqClient.Enqueue(asynq.NewTask(task.UpdateSingleUserGamificationScoreTask, payload)); err != nil {
+	if _, err := schedule.AsynqClient.Enqueue(asynq.NewTask(task.UpdateSingleUserGamificationScoreTask, payload), asynq.Queue(task.QueueWhitelistOnly)); err != nil {
 		logger.ErrorF(ctx, "下发用户[%s]积分计算任务失败: %v", u.Username, err)
 	} else {
 		logger.InfoF(ctx, "下发用户[%s]积分计算任务成功", u.Username)

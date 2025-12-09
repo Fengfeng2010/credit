@@ -37,17 +37,16 @@ import (
 
 // StartWorker 启动任务处理服务器
 func StartWorker() error {
+	// 从配置构建队列映射
+	queues := buildQueuesFromConfig()
+
 	asynqServer := asynq.NewServer(
 		task.RedisOpt,
 		asynq.Config{
 			Concurrency:     config.Config.Worker.Concurrency,
 			ShutdownTimeout: 3 * time.Minute,
-			Queues: map[string]int{
-				"critical": 10,
-				"default":  5,
-				"low":      1,
-			},
-			StrictPriority: true,
+			Queues:          queues,
+			StrictPriority:  true,
 		},
 	)
 
@@ -61,4 +60,29 @@ func StartWorker() error {
 	mux.HandleFunc(task.MerchantPaymentNotifyTask, payment.HandleMerchantPaymentNotify)
 	// 启动服务器
 	return asynqServer.Run(mux)
+}
+
+// buildQueuesFromConfig 从配置构建队列映射
+func buildQueuesFromConfig() map[string]int {
+	queues := make(map[string]int)
+
+	// 从配置读取队列
+	if len(config.Config.Worker.Queues) > 0 {
+		for _, q := range config.Config.Worker.Queues {
+			if q.Name != "" && q.Priority > 0 {
+				queues[q.Name] = q.Priority
+			}
+		}
+	}
+
+	// 如果配置为空，使用默认队列
+	if len(queues) == 0 {
+		queues = map[string]int{
+			task.QueueWebhook:       10,
+			task.QueueWhitelistOnly: 5,
+			task.QueueDefault:       1,
+		}
+	}
+
+	return queues
 }

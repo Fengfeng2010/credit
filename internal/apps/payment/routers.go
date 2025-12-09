@@ -540,7 +540,7 @@ func PayMerchantOrder(c *gin.Context) {
 			})
 			if _, errTask := schedule.AsynqClient.Enqueue(
 				asynq.NewTask(task.MerchantPaymentNotifyTask, notifyPayload),
-				asynq.Queue("critical"),
+				asynq.Queue(task.QueueWebhook),
 				asynq.MaxRetry(5),
 				asynq.Timeout(30*time.Second),
 			); errTask != nil {

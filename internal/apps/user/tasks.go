@@ -80,7 +80,7 @@ func HandleUpdateUserGamificationScores(ctx context.Context, t *asynq.Task) erro
 				"user_id": user.ID,
 			})
 
-			if _, errTask := schedule.AsynqClient.Enqueue(asynq.NewTask(task.UpdateSingleUserGamificationScoreTask, payload), asynq.ProcessIn(currentDelay), asynq.MaxRetry(3)); errTask != nil {
+			if _, errTask := schedule.AsynqClient.Enqueue(asynq.NewTask(task.UpdateSingleUserGamificationScoreTask, payload), asynq.Queue(task.QueueWhitelistOnly), asynq.ProcessIn(currentDelay), asynq.MaxRetry(3)); errTask != nil {
 				logger.ErrorF(ctx, "下发用户[%s]积分计算任务失败: %v", user.Username, errTask)
 				return errTask
 			} else {

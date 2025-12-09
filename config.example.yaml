@@ -80,7 +80,14 @@ schedule:
 
 # Worker
 worker:
-  concurrency: 50
+  concurrency: 20
+  queues:
+    - name: whitelist_only
+      priority: 10
+    - name: webhook
+      priority: 5
+    - name: default
+      priority: 3
 
 # linuxDo
 linuxDo:

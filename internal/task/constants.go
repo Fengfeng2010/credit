@@ -31,3 +31,9 @@ const (
 	AutoRefundSingleDisputeTask           = "dispute:auto_refund_single"
 	MerchantPaymentNotifyTask             = "payment:merchant_notify" // 商户支付回调任务
 )
+
+const (
+	QueueWhitelistOnly = "whitelist_only"
+	QueueWebhook       = "webhook"
+	QueueDefault       = "default"
+)
