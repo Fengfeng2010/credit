@@ -13,9 +13,8 @@ ARG TARGETPLATFORM
 # copy the appropriate binary based on platform
 COPY pay-server-${TARGETPLATFORM#linux/} ./pay-server
 
-# copy docs and support files
+# copy docs
 COPY docs ./docs
-COPY support-files ./support-files
 
 EXPOSE 8000
 
