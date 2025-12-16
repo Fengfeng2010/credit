@@ -27,7 +27,6 @@ package router
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -72,28 +71,43 @@ func Serve() {
 	r := gin.New()
 	r.Use(gin.Recovery())
 
-	// Session
+	cfg := config.Config.Redis
+	addrs := cfg.Addrs
+	sessionAddr := "localhost:6379"
+	if len(addrs) > 0 {
+		sessionAddr = addrs[0]
+	}
+
 	sessionStore, err := redis.NewStoreWithDB(
-		config.Config.Redis.MinIdleConn,
+		cfg.MinIdleConn,
 		"tcp",
-		fmt.Sprintf("%s:%d", config.Config.Redis.Host, config.Config.Redis.Port),
-		config.Config.Redis.Username,
-		config.Config.Redis.Password,
-		strconv.Itoa(config.Config.Redis.DB),
+		sessionAddr,
+		cfg.Username,
+		cfg.Password,
+		strconv.Itoa(cfg.DB),
 		[]byte(config.Config.App.SessionSecret),
 	)
 	if err != nil {
 		log.Fatalf("[API] init session store failed: %v\n", err)
 	}
+
+	// 设置 Session Redis Key 前缀
+	if cfg.KeyPrefix != "" {
+		if err := redis.SetKeyPrefix(sessionStore, cfg.KeyPrefix+"session:"); err != nil {
+			log.Printf("[API] set session key prefix failed: %v\n", err)
+		}
+	}
+
 	sessionStore.Options(
 		sessions.Options{
 			Path:     "/",
 			Domain:   config.Config.App.SessionDomain,
 			MaxAge:   config.Config.App.SessionAge,
 			HttpOnly: config.Config.App.SessionHttpOnly,
-			Secure:   config.Config.App.SessionSecure, // 若用 HTTPS 可以设 true
+			Secure:   config.Config.App.SessionSecure,
 		},
 	)
+
 	r.Use(sessions.Sessions(config.Config.App.SessionCookieName, sessionStore))
 
 	// 补充中间件

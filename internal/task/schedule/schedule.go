@@ -61,11 +61,21 @@ func StartScheduler() error {
 			},
 		)
 
-		if _, err = scheduler.Register(config.Config.Schedule.UpdateUserGamificationScoresTaskCron, asynq.NewTask(task.UpdateUserGamificationScoresTask, nil)); err != nil {
+		// 用户积分更新任务
+		if _, err = scheduler.Register(
+			config.Config.Schedule.UpdateUserGamificationScoresTaskCron,
+			asynq.NewTask(task.UpdateUserGamificationScoresTask, nil),
+			asynq.Unique(23*time.Hour),
+		); err != nil {
 			return
 		}
 
-		if _, err = scheduler.Register(config.Config.Schedule.AutoRefundExpiredDisputesTaskCron, asynq.NewTask(task.AutoRefundExpiredDisputesTask, nil)); err != nil {
+		// 争议自动退款任务
+		if _, err = scheduler.Register(
+			config.Config.Schedule.AutoRefundExpiredDisputesTaskCron,
+			asynq.NewTask(task.AutoRefundExpiredDisputesTask, nil),
+			asynq.Unique(23*time.Hour),
+		); err != nil {
 			return
 		}
 

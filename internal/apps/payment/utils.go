@@ -82,7 +82,7 @@ type OrderContext struct {
 
 // ParseOrderNo 解析订单号，获取订单上下文信息
 func ParseOrderNo(c *gin.Context, orderNo string) (*OrderContext, error) {
-	merchantIDStr, errGet := db.Redis.Get(c.Request.Context(), fmt.Sprintf(OrderMerchantIDCacheKeyFormat, orderNo)).Result()
+	merchantIDStr, errGet := db.Redis.Get(c.Request.Context(), db.PrefixedKey(fmt.Sprintf(OrderMerchantIDCacheKeyFormat, orderNo))).Result()
 	if errGet != nil {
 		if errors.Is(errGet, redis.Nil) {
 			return nil, errors.New(OrderNotFound)

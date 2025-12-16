@@ -47,7 +47,7 @@ import (
 func GetLoginURL(c *gin.Context) {
 	// 存储 State 到缓存
 	state := uuid.NewString()
-	cmd := db.Redis.Set(c.Request.Context(), fmt.Sprintf(OAuthStateCacheKeyFormat, state), state, OAuthStateCacheKeyExpiration)
+	cmd := db.Redis.Set(c.Request.Context(), db.PrefixedKey(fmt.Sprintf(OAuthStateCacheKeyFormat, state)), state, OAuthStateCacheKeyExpiration)
 	if cmd.Err() != nil {
 		c.JSON(http.StatusInternalServerError, util.Err(cmd.Err().Error()))
 		return
@@ -75,12 +75,12 @@ func Callback(c *gin.Context) {
 		return
 	}
 	// check state
-	cmd := db.Redis.Get(c.Request.Context(), fmt.Sprintf(OAuthStateCacheKeyFormat, req.State))
+	cmd := db.Redis.Get(c.Request.Context(), db.PrefixedKey(fmt.Sprintf(OAuthStateCacheKeyFormat, req.State)))
 	if cmd.Val() != req.State {
 		c.JSON(http.StatusBadRequest, util.Err(InvalidState))
 		return
 	}
-	db.Redis.Del(c.Request.Context(), fmt.Sprintf(OAuthStateCacheKeyFormat, req.State))
+	db.Redis.Del(c.Request.Context(), db.PrefixedKey(fmt.Sprintf(OAuthStateCacheKeyFormat, req.State)))
 	// do oauth
 	user, err := doOAuth(c.Request.Context(), req.Code)
 	if err != nil {

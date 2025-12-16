@@ -34,44 +34,61 @@ import (
 	"github.com/linux-do/pay/internal/config"
 	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
-	"github.com/redis/go-redis/v9/maintnotifications"
 )
 
 var (
-	Redis *redis.Client
+	Redis redis.UniversalClient
 )
 
 func init() {
-	redisConfig := config.Config.Redis
+	cfg := config.Config.Redis
 
-	if !redisConfig.Enabled {
+	if !cfg.Enabled {
 		log.Println("[Redis] is disabled, skipping Redis initialization")
 		return
 	}
 
-	addr := fmt.Sprintf("%s:%d", redisConfig.Host, redisConfig.Port)
+	if cfg.ClusterMode {
+		// Cluster 模式
+		Redis = redis.NewClusterClient(&redis.ClusterOptions{
+			Addrs:           cfg.Addrs,
+			Username:        cfg.Username,
+			Password:        cfg.Password,
+			PoolSize:        cfg.PoolSize,
+			MinIdleConns:    cfg.MinIdleConn,
+			DialTimeout:     time.Duration(cfg.DialTimeout) * time.Second,
+			ReadTimeout:     time.Duration(cfg.ReadTimeout) * time.Second,
+			WriteTimeout:    time.Duration(cfg.WriteTimeout) * time.Second,
+			MaxRetries:      cfg.MaxRetries,
+			PoolTimeout:     time.Duration(cfg.PoolTimeout) * time.Second,
+			ConnMaxIdleTime: time.Duration(cfg.ConnMaxIdleTime) * time.Second,
+		})
+		log.Println("[Redis] initialized in Cluster mode")
+	} else {
+		// Standalone 或 Sentinel 模式
+		Redis = redis.NewUniversalClient(&redis.UniversalOptions{
+			Addrs:           cfg.Addrs,
+			MasterName:      cfg.MasterName, // 非空时启用 Sentinel
+			Username:        cfg.Username,
+			Password:        cfg.Password,
+			DB:              cfg.DB,
+			PoolSize:        cfg.PoolSize,
+			MinIdleConns:    cfg.MinIdleConn,
+			DialTimeout:     time.Duration(cfg.DialTimeout) * time.Second,
+			ReadTimeout:     time.Duration(cfg.ReadTimeout) * time.Second,
+			WriteTimeout:    time.Duration(cfg.WriteTimeout) * time.Second,
+			MaxRetries:      cfg.MaxRetries,
+			PoolTimeout:     time.Duration(cfg.PoolTimeout) * time.Second,
+			ConnMaxIdleTime: time.Duration(cfg.ConnMaxIdleTime) * time.Second,
+		})
+		if cfg.MasterName != "" {
+			log.Println("[Redis] initialized in Sentinel mode")
+		} else {
+			log.Println("[Redis] initialized in Standalone mode")
+		}
+	}
 
-	Redis = redis.NewClient(
-		&redis.Options{
-			Addr:            addr,
-			Username:        redisConfig.Username,
-			Password:        redisConfig.Password,
-			DB:              redisConfig.DB,
-			PoolSize:        redisConfig.PoolSize,
-			MinIdleConns:    redisConfig.MinIdleConn,
-			DialTimeout:     time.Duration(redisConfig.DialTimeout) * time.Second,
-			ReadTimeout:     time.Duration(redisConfig.ReadTimeout) * time.Second,
-			WriteTimeout:    time.Duration(redisConfig.WriteTimeout) * time.Second,
-			MaxRetries:      redisConfig.MaxRetries,
-			PoolTimeout:     time.Duration(redisConfig.PoolTimeout) * time.Second,
-			ConnMaxIdleTime: time.Duration(redisConfig.ConnMaxIdleTime) * time.Second,
-			MaintNotificationsConfig: &maintnotifications.Config{
-				Mode: maintnotifications.ModeDisabled,
-			},
-		},
-	)
-
-	// Trace
+	// OpenTelemetry 追踪（UniversalClient 兼容）
 	if err := redisotel.InstrumentTracing(Redis); err != nil {
 		log.Fatalf("[Redis] failed to init trace: %v\n", err)
 	}
@@ -81,6 +98,15 @@ func init() {
 	if err != nil {
 		log.Fatalf("[Redis] failed to connect to redis: %v\n", err)
 	}
+}
+
+// PrefixedKey 返回带前缀的 Key
+func PrefixedKey(key string) string {
+	prefix := config.Config.Redis.KeyPrefix
+	if prefix == "" {
+		return key
+	}
+	return prefix + key
 }
 
 // HSetJSON 将泛型数据序列化为 JSON 并设置到 Redis Hash
@@ -94,7 +120,7 @@ func HSetJSON[T any](ctx context.Context, hashKey, fieldKey string, data T) erro
 		return err
 	}
 
-	if err := Redis.HSet(ctx, hashKey, fieldKey, jsonData).Err(); err != nil {
+	if err := Redis.HSet(ctx, PrefixedKey(hashKey), fieldKey, jsonData).Err(); err != nil {
 		return fmt.Errorf("failed to set redis hash: %w", err)
 	}
 
@@ -107,7 +133,7 @@ func HSetJSON[T any](ctx context.Context, hashKey, fieldKey string, data T) erro
 // fieldKey: Hash field key
 // data: 用于接收数据的指针（泛型）
 func HGetJSON[T any](ctx context.Context, hashKey, fieldKey string, data *T) error {
-	val, err := Redis.HGet(ctx, hashKey, fieldKey).Result()
+	val, err := Redis.HGet(ctx, PrefixedKey(hashKey), fieldKey).Result()
 	if err != nil {
 		return err
 	}

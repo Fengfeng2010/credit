@@ -210,7 +210,7 @@ func DeleteSystemConfig(c *gin.Context) {
 			return err
 		}
 
-		if err := db.Redis.HDel(c.Request.Context(), model.SystemConfigRedisHashKey, key).Err(); err != nil {
+		if err := db.Redis.HDel(c.Request.Context(), db.PrefixedKey(model.SystemConfigRedisHashKey), key).Err(); err != nil {
 			return err
 		}
 

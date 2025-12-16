@@ -155,11 +155,11 @@ func CreateMerchantOrder(c *gin.Context) {
 			}
 
 			merchantIDStr := strconv.FormatUint(merchantUser.ID, 10)
-			if errSet := db.Redis.Set(c.Request.Context(), fmt.Sprintf(OrderMerchantIDCacheKeyFormat, encryptString), merchantIDStr, time.Duration(expireMinutes)*time.Minute).Err(); errSet != nil {
+			if errSet := db.Redis.Set(c.Request.Context(), db.PrefixedKey(fmt.Sprintf(OrderMerchantIDCacheKeyFormat, encryptString)), merchantIDStr, time.Duration(expireMinutes)*time.Minute).Err(); errSet != nil {
 				return fmt.Errorf("failed to set redis key: %w", errSet)
 			}
 
-			expireKey := fmt.Sprintf(OrderExpireKeyFormat, order.ID)
+			expireKey := db.PrefixedKey(fmt.Sprintf(OrderExpireKeyFormat, order.ID))
 			if errSet := db.Redis.Set(c.Request.Context(), expireKey, order.ID, time.Duration(expireMinutes)*time.Minute).Err(); errSet != nil {
 				return fmt.Errorf("failed to set order expire key: %w", errSet)
 			}
@@ -466,7 +466,7 @@ func PayMerchantOrder(c *gin.Context) {
 				return err
 			}
 
-			expireKey := fmt.Sprintf(OrderExpireKeyFormat, order.ID)
+			expireKey := db.PrefixedKey(fmt.Sprintf(OrderExpireKeyFormat, order.ID))
 			if err := db.Redis.Del(c.Request.Context(), expireKey).Err(); err != nil {
 				log.Printf("[Payment] 删除订单过期key失败: order_id=%d, error=%v", order.ID, err)
 			}

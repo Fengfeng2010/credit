@@ -25,18 +25,58 @@
 package task
 
 import (
-	"fmt"
-
 	"github.com/hibiken/asynq"
 	"github.com/linux-do/pay/internal/config"
 )
 
-var (
-	RedisOpt = asynq.RedisClientOpt{
-		Addr:     fmt.Sprintf("%s:%d", config.Config.Redis.Host, config.Config.Redis.Port),
-		Username: config.Config.Redis.Username,
-		Password: config.Config.Redis.Password,
-		DB:       config.Config.Redis.DB,
-		PoolSize: config.Config.Redis.PoolSize,
+// RedisOpt asynq Redis 连接配置（兼容 Standalone/Sentinel/Cluster）
+var RedisOpt asynq.RedisConnOpt
+
+func init() {
+	RedisOpt = NewRedisConnOpt()
+}
+
+// NewRedisConnOpt 根据配置返回对应的 asynq Redis 连接选项
+func NewRedisConnOpt() asynq.RedisConnOpt {
+	cfg := config.Config.Redis
+	addrs := cfg.Addrs
+
+	if cfg.ClusterMode {
+		return asynq.RedisClusterClientOpt{
+			Addrs:    addrs,
+			Username: cfg.Username,
+			Password: cfg.Password,
+		}
 	}
-)
+
+	if cfg.MasterName != "" {
+		return asynq.RedisFailoverClientOpt{
+			MasterName:    cfg.MasterName,
+			SentinelAddrs: addrs,
+			Username:      cfg.Username,
+			Password:      cfg.Password,
+			DB:            cfg.DB,
+		}
+	}
+
+	addr := "localhost:6379"
+	if len(addrs) > 0 {
+		addr = addrs[0]
+	}
+	return asynq.RedisClientOpt{
+		Addr:     addr,
+		Username: cfg.Username,
+		Password: cfg.Password,
+		DB:       cfg.DB,
+		PoolSize: cfg.PoolSize,
+	}
+}
+
+// PrefixedQueue 返回带前缀的队列名，用于 Cluster 模式隔离
+func PrefixedQueue(queue string) string {
+	prefix := config.Config.Redis.KeyPrefix
+	if prefix == "" {
+		return queue
+	}
+	return prefix + queue
+}
