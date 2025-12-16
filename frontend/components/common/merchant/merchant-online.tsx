@@ -147,7 +147,8 @@ function MerchantOnlineContent({ apiKeys, loadAPIKeys }: MerchantOnlineContentPr
       setIsCreating(false)
       setSelectedLink(null)
     }
-  }, [selectedKey, fetchLinks, fetchTransactions])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedKey?.client_id])
 
 
   /* 处理返回 */
