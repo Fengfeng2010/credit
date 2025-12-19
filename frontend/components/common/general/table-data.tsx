@@ -27,79 +27,77 @@ const ROW_HEIGHT = 36
 /**
  * 虚拟化交易数据表格组件
  * 使用 @tanstack/react-virtual 实现大数据量高性能渲染
- */ 
+ */
 export const TransactionDataTable = React.memo(function TransactionDataTable({
   transactions
 }: {
   transactions: Order[]
 }) {
-  const parentRef = React.useRef<HTMLDivElement>(null)
+  const scrollAreaRef = React.useRef<HTMLDivElement>(null)
 
   const rowVirtualizer = useVirtualizer({
     count: transactions.length,
-    getScrollElement: () => parentRef.current,
+    getScrollElement: () => {
+      if (!scrollAreaRef.current) return null
+      const viewport = scrollAreaRef.current.querySelector('[data-slot="scroll-area-viewport"]')
+      return viewport as Element
+    },
     estimateSize: () => ROW_HEIGHT,
     overscan: 5,
   })
 
+  const virtualItems = rowVirtualizer.getVirtualItems()
+  const totalSize = rowVirtualizer.getTotalSize()
+  const paddingTop = virtualItems.length > 0 ? virtualItems[0].start : 0
+  const paddingBottom = virtualItems.length > 0 ? totalSize - virtualItems[virtualItems.length - 1].end : 0
+
   return (
     <div className="border border-dashed shadow-none rounded-lg overflow-hidden">
-      <ScrollArea className="w-full">
-        <div className="relative w-full">
-          <table className="w-full caption-bottom text-sm">
-            <TableHeader>
-              <TableRow className="border-b border-dashed">
-                <TableHead className="whitespace-nowrap w-[120px]">名称</TableHead>
-                <TableHead className="whitespace-nowrap text-center min-w-[60px]">积分</TableHead>
-                <TableHead className="whitespace-nowrap text-center min-w-[50px]">类型</TableHead>
-                <TableHead className="whitespace-nowrap text-center min-w-[50px]">状态</TableHead>
-                <TableHead className="whitespace-nowrap text-center min-w-[80px]">积分动向</TableHead>
-                <TableHead className="whitespace-nowrap text-center min-w-[80px]">应用名</TableHead>
-                <TableHead className="whitespace-nowrap text-left min-w-[120px]">编号</TableHead>
-                <TableHead className="whitespace-nowrap text-left min-w-[120px]">业务单号</TableHead>
-                <TableHead className="whitespace-nowrap text-left w-[120px]">创建时间</TableHead>
-                <TableHead className="whitespace-nowrap text-left w-[120px]">交易时间</TableHead>
-                <TableHead className="whitespace-nowrap text-left w-[120px]">订单过期时间</TableHead>
-                <TableHead className="sticky right-0 whitespace-nowrap text-center bg-background shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.1)] w-[150px] z-10">操作</TableHead>
-              </TableRow>
-            </TableHeader>
-          </table>
-
-          <div
-            ref={parentRef}
-            className="overflow-auto max-h-[600px]"
-          >
-            <div
-              style={{
-                height: `${ rowVirtualizer.getTotalSize() }px`,
-                width: "100%",
-                position: "relative",
-              }}
-            >
-              <table className="w-full caption-bottom text-sm">
-                <TableBody className="animate-in fade-in duration-200">
-                  {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                    const order = transactions[virtualRow.index]
-                    return (
-                      <TransactionTableRow
-                        key={order.id}
-                        order={order}
-                        style={{
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          width: "100%",
-                          height: `${ virtualRow.size }px`,
-                          transform: `translateY(${ virtualRow.start }px)`,
-                        }}
-                      />
-                    )
-                  })}
-                </TableBody>
-              </table>
-            </div>
-          </div>
-        </div>
+      <ScrollArea
+        ref={scrollAreaRef}
+        className="w-full max-h-[600px] whitespace-nowrap"
+      >
+        <table className="w-full caption-bottom text-sm min-w-full">
+          <TableHeader className="sticky top-0 z-20 bg-background">
+            <TableRow className="border-b border-dashed hover:bg-transparent">
+              <TableHead className="whitespace-nowrap w-[120px]">名称</TableHead>
+              <TableHead className="whitespace-nowrap text-center min-w-[60px]">积分</TableHead>
+              <TableHead className="whitespace-nowrap text-center min-w-[50px]">类型</TableHead>
+              <TableHead className="whitespace-nowrap text-center min-w-[50px]">状态</TableHead>
+              <TableHead className="whitespace-nowrap text-center min-w-[80px]">积分动向</TableHead>
+              <TableHead className="whitespace-nowrap text-center min-w-[80px]">应用名</TableHead>
+              <TableHead className="whitespace-nowrap text-left min-w-[120px]">编号</TableHead>
+              <TableHead className="whitespace-nowrap text-left min-w-[120px]">业务单号</TableHead>
+              <TableHead className="whitespace-nowrap text-left w-[120px]">创建时间</TableHead>
+              <TableHead className="whitespace-nowrap text-left w-[120px]">交易时间</TableHead>
+              <TableHead className="whitespace-nowrap text-left w-[120px]">订单过期时间</TableHead>
+              <TableHead className="sticky right-0 whitespace-nowrap text-center bg-background shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.1)] w-[150px] z-20">操作</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody className="animate-in fade-in duration-200">
+            {paddingTop > 0 && (
+              <tr style={{ height: `${ paddingTop }px` }}>
+                <td colSpan={12} />
+              </tr>
+            )}
+            {virtualItems.map((virtualRow) => {
+              const order = transactions[virtualRow.index]
+              return (
+                <TransactionTableRow
+                  key={order.id}
+                  order={order}
+                  data-index={virtualRow.index}
+                  ref={rowVirtualizer.measureElement}
+                />
+              )
+            })}
+            {paddingBottom > 0 && (
+              <tr style={{ height: `${ paddingBottom }px` }}>
+                <td colSpan={12} />
+              </tr>
+            )}
+          </TableBody>
+        </table>
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
     </div>
@@ -109,13 +107,14 @@ export const TransactionDataTable = React.memo(function TransactionDataTable({
 /**
  * 交易表格行组件
  */
-const TransactionTableRow = React.memo(function TransactionTableRow({
-  order,
-  style
-}: {
+const TransactionTableRow = React.memo(React.forwardRef<HTMLTableRowElement, {
   order: Order
   style?: React.CSSProperties
-}) {
+} & React.HTMLAttributes<HTMLTableRowElement>>(function TransactionTableRow({
+  order,
+  style,
+  ...props
+}, ref) {
   const getAmountDisplay = (amount: string) => (
     <span className="text-xs font-semibold">
       {parseFloat(amount).toFixed(2)}
@@ -126,7 +125,9 @@ const TransactionTableRow = React.memo(function TransactionTableRow({
 
   return (
     <TableRow
+      ref={ref}
       style={style}
+      {...props}
       className={`
         border-dashed group hover:bg-muted/50 data-[state=selected]:bg-muted
         ${ isDisputing ? 'bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100/50 dark:hover:bg-yellow-900/30' : '' }
@@ -155,7 +156,7 @@ const TransactionTableRow = React.memo(function TransactionTableRow({
         </Badge>
       </TableCell>
       <TableCell className="text-[11px] font-medium whitespace-nowrap text-center py-1">
-        {order.status === 'pending' || order.status === 'expired' ? (
+        {order.status === 'pending' || order.status === 'expired' || order.type === 'community' ? (
           <div className="text-muted-foreground">-</div>
         ) : (
           <TooltipProvider>
@@ -245,7 +246,7 @@ const TransactionTableRow = React.memo(function TransactionTableRow({
       </TableCell>
     </TableRow>
   )
-})
+}))
 
 interface TransactionTableListProps {
   loading: boolean
