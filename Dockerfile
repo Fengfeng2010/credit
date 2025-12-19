@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM alpine:3.23.2
 
 # set the time zone to Beijing Time in the Eastern 8th Time Zone
 ARG TZ=Asia/Shanghai
