@@ -17,16 +17,15 @@ limitations under the License.
 package config
 
 type configModel struct {
-	App        appConfig        `mapstructure:"app"`
-	OAuth2     OAuth2Config     `mapstructure:"oauth2"`
-	Database   databaseConfig   `mapstructure:"database"`
-	Redis      redisConfig      `mapstructure:"redis"`
-	Log        logConfig        `mapstructure:"log"`
-	Schedule   scheduleConfig   `mapstructure:"schedule"`
-	Worker     workerConfig     `mapstructure:"worker"`
-	ClickHouse clickHouseConfig `mapstructure:"clickhouse"`
-	LinuxDo    linuxDoConfig    `mapstructure:"linuxdo"`
-	Otel       otelConfig       `mapstructure:"otel"`
+	App      appConfig      `mapstructure:"app"`
+	OAuth2   OAuth2Config   `mapstructure:"oauth2"`
+	Database databaseConfig `mapstructure:"database"`
+	Redis    redisConfig    `mapstructure:"redis"`
+	Log      logConfig      `mapstructure:"log"`
+	Schedule scheduleConfig `mapstructure:"schedule"`
+	Worker   workerConfig   `mapstructure:"worker"`
+	LinuxDo  linuxDoConfig  `mapstructure:"linuxdo"`
+	Otel     otelConfig     `mapstructure:"otel"`
 }
 
 // appConfig 应用基本配置
@@ -57,37 +56,33 @@ type OAuth2Config struct {
 
 // databaseConfig 数据库配置
 type databaseConfig struct {
-	Enabled                bool   `mapstructure:"enabled"`
-	Host                   string `mapstructure:"host"`
-	Port                   int    `mapstructure:"port"`
-	Username               string `mapstructure:"username"`
-	Password               string `mapstructure:"password"`
-	Database               string `mapstructure:"database"`
-	MaxIdleConn            int    `mapstructure:"max_idle_conn"`
-	MaxOpenConn            int    `mapstructure:"max_open_conn"`
-	ConnMaxLifetime        int    `mapstructure:"conn_max_lifetime"`
-	ConnMaxIdleTime        int    `mapstructure:"conn_max_idle_time"`
-	LogLevel               string `mapstructure:"log_level"`
-	SSLMode                string `mapstructure:"ssl_mode"`
-	TimeZone               string `mapstructure:"time_zone"`
-	ApplicationName        string `mapstructure:"application_name"`
-	SearchPath             string `mapstructure:"search_path"`
-	PreferSimpleProtocol   bool   `mapstructure:"prefer_simple_protocol"`
-	StatementCacheCapacity int    `mapstructure:"statement_cache_capacity"`
-	DefaultQueryExecMode   string `mapstructure:"default_query_exec_mode"`
+	Enabled                bool                    `mapstructure:"enabled"`
+	Host                   string                  `mapstructure:"host"`
+	Port                   int                     `mapstructure:"port"`
+	Username               string                  `mapstructure:"username"`
+	Password               string                  `mapstructure:"password"`
+	Database               string                  `mapstructure:"database"`
+	MaxIdleConn            int                     `mapstructure:"max_idle_conn"`
+	MaxOpenConn            int                     `mapstructure:"max_open_conn"`
+	ConnMaxLifetime        int                     `mapstructure:"conn_max_lifetime"`
+	ConnMaxIdleTime        int                     `mapstructure:"conn_max_idle_time"`
+	LogLevel               string                  `mapstructure:"log_level"`
+	SSLMode                string                  `mapstructure:"ssl_mode"`
+	TimeZone               string                  `mapstructure:"time_zone"`
+	ApplicationName        string                  `mapstructure:"application_name"`
+	SearchPath             string                  `mapstructure:"search_path"`
+	PreferSimpleProtocol   bool                    `mapstructure:"prefer_simple_protocol"`
+	StatementCacheCapacity int                     `mapstructure:"statement_cache_capacity"`
+	DefaultQueryExecMode   string                  `mapstructure:"default_query_exec_mode"`
+	Replicas               []databaseReplicaConfig `mapstructure:"replicas"`
 }
 
-// clickhouse 配置
-type clickHouseConfig struct {
-	Enabled         bool     `mapstructure:"enabled"`
-	Hosts           []string `mapstructure:"hosts"`
-	Username        string   `mapstructure:"username"`
-	Password        string   `mapstructure:"password"`
-	Database        string   `mapstructure:"database"`
-	MaxIdleConn     int      `mapstructure:"max_idle_conn"`
-	MaxOpenConn     int      `mapstructure:"max_open_conn"`
-	ConnMaxLifetime int      `mapstructure:"conn_max_lifetime"`
-	DialTimeout     int      `mapstructure:"dial_timeout"`
+// databaseReplicaConfig 只读副本配置
+type databaseReplicaConfig struct {
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
+	Username string `mapstructure:"username"`
+	Password string `mapstructure:"password"`
 }
 
 // redisConfig Redis配置

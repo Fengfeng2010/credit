@@ -26,6 +26,7 @@ oauth2:
   user_endpoint: "https://connect.linux.do/api/user"
 
 # DB
+# 支持两种模式：Standalone（单节点）、Primary-Replica（读写分离）
 database:
   enabled: true
   host: "127.0.0.1"
@@ -41,15 +42,19 @@ database:
   ssl_mode: "disable"
   time_zone: "Asia/Shanghai"
   application_name: "pay-server"
-  search_path: "public"
+  # pgb改为true,默认false
   prefer_simple_protocol: false
+  search_path: "public"
   statement_cache_capacity: 256
   default_query_exec_mode: "cache_statement"
+  # replicas:
+  #   - host: "replica1.db.local"
+  #     port: 5432
+  #   - host: "replica2.db.local"
+  #     port: 5432
 
-# Redis配置
+# Redis
 # 支持三种模式：Standalone（单节点）、Sentinel（高可用）、Cluster（水平扩展）
-# 注意：asynq v0.25.1 不支持自定义 key 前缀（v0.26.0 将支持）
-#       如需隔离 asynq，请配置独立的 Redis 实例或 db
 redis:
   enabled: true
   addrs:
@@ -103,6 +108,6 @@ worker:
 linuxDo:
   api_key: "<LINUX_DO_API_KEY>"
 
-# OpenTelemetry 配置
+# OpenTelemetry
 otel:
   sampling_rate: 0.1  # 采样率 0.0-1.0
