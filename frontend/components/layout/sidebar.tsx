@@ -91,12 +91,18 @@ const data = {
  * @returns {React.ReactNode} 应用侧边栏组件
  */
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { toggleSidebar, state } = useSidebar()
+  const { toggleSidebar, state, isMobile, setOpenMobile } = useSidebar()
   const { user, getTrustLevelLabel, logout } = useUser()
   const [showLogoutDialog, setShowLogoutDialog] = React.useState(false)
   const [isLoggingOut, setIsLoggingOut] = React.useState(false)
   const pathname = usePathname()
   const router = useRouter()
+
+  const handleCloseSidebar = React.useCallback(() => {
+    if (isMobile) {
+      setOpenMobile(false)
+    }
+  }, [isMobile, setOpenMobile])
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
@@ -179,16 +185,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   </span>
                 </div>
               </DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => router.push("/settings/profile")}>
+              <DropdownMenuItem onClick={() => {
+                router.push("/settings/profile")
+                handleCloseSidebar()
+              }}>
                 <UserRound className="mr-2 size-4" />
                 <span>我的资料</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push("/settings")}>
+              <DropdownMenuItem onClick={() => {
+                router.push("/settings")
+                handleCloseSidebar()
+              }}>
                 <Settings className="mr-2 size-4" />
                 <span>设置</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator className="my-2" />
-              <DropdownMenuItem onClick={() => router.push("/docs/how-to-use")}>
+              <DropdownMenuItem onClick={() => {
+                router.push("/docs/how-to-use")
+                handleCloseSidebar()
+              }}>
                 <FileQuestionMark className="mr-2 size-4" />
                 <span>使用帮助</span>
               </DropdownMenuItem>
@@ -210,7 +225,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       isActive={pathname === item.url}
                       asChild
                     >
-                      <Link href={item.url}>
+                      <Link href={item.url} onClick={handleCloseSidebar}>
                         {item.icon && <item.icon />}
                         <span>{item.title}</span>
                       </Link>
@@ -235,7 +250,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         isActive={pathname === item.url}
                         asChild
                       >
-                        <Link href={item.url}>
+                        <Link href={item.url} onClick={handleCloseSidebar}>
                           {item.icon && <item.icon />}
                           <span>{item.title}</span>
                         </Link>
@@ -259,7 +274,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       tooltip={item.title}
                       asChild
                     >
-                      <Link href={item.url} target="_blank" rel="noopener noreferrer">
+                      <Link href={item.url} target="_blank" rel="noopener noreferrer" onClick={handleCloseSidebar}>
                         {item.icon && <item.icon />}
                         <span>{item.title}</span>
                       </Link>
@@ -282,7 +297,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       tooltip={item.title}
                       asChild
                     >
-                      <Link href={item.url}>
+                      <Link href={item.url} onClick={handleCloseSidebar}>
                         {item.icon && <item.icon />}
                         <span>{item.title}</span>
                       </Link>
