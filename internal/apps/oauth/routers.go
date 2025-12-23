@@ -166,6 +166,7 @@ func UserInfo(c *gin.Context) {
 // @Router /api/v1/oauth/logout [get]
 func Logout(c *gin.Context) {
 	session := sessions.Default(c)
+	session.Options(util.GetSessionOptions(-1))
 	session.Clear()
 	if err := session.Save(); err != nil {
 		c.JSON(http.StatusInternalServerError, util.Err(err.Error()))
