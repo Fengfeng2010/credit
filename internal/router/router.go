@@ -33,6 +33,7 @@ import (
 	"github.com/linux-do/credit/internal/apps/merchant/api_key"
 	"github.com/linux-do/credit/internal/apps/merchant/link"
 	"github.com/linux-do/credit/internal/listener"
+	"github.com/linux-do/credit/internal/util"
 
 	"github.com/linux-do/credit/internal/apps/payment"
 
@@ -91,15 +92,7 @@ func Serve() {
 		}
 	}
 
-	sessionStore.Options(
-		sessions.Options{
-			Path:     "/",
-			Domain:   config.Config.App.SessionDomain,
-			MaxAge:   config.Config.App.SessionAge,
-			HttpOnly: config.Config.App.SessionHttpOnly,
-			Secure:   config.Config.App.SessionSecure,
-		},
-	)
+	sessionStore.Options(util.GetSessionOptions(config.Config.App.SessionAge))
 
 	r.Use(sessions.Sessions(config.Config.App.SessionCookieName, sessionStore))
 
