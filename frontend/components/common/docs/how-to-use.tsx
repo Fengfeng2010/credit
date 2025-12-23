@@ -50,11 +50,11 @@ export const howToUseSections: PolicySection[] = [
     title: "3. 接入积分服务",
     content: (
       <div className="space-y-4 text-sm leading-relaxed">
-        <h3 id="3-1-api" className="text-lg font-semibold text-foreground mt-8 mb-4">3.1 使用 API 接口</h3>
-        <ol className="list-decimal pl-5 space-y-2">
+        <h3 id="3-1-api" className="text-base md:text-lg font-semibold text-foreground mt-6 md:mt-8 mb-3 md:mb-4">3.1 使用 API 接口</h3>
+        <ol className="list-decimal pl-4 md:pl-5 space-y-2">
           <li>
             <strong>创建应用</strong>
-            <ul className="list-disc pl-5 mt-2 space-y-1 text-muted-foreground">
+            <ul className="list-disc pl-4 md:pl-5 mt-2 space-y-1 text-muted-foreground">
               <li>前往 <a href="/merchant" className="text-primary hover:underline">集市中心</a></li>
               <li>点击顶部右侧 <strong>创建应用</strong> 按钮</li>
               <li>填写必要信息：应用名称、应用主页、回调地址、通知地址</li>
@@ -62,10 +62,10 @@ export const howToUseSections: PolicySection[] = [
           </li>
           <li>
             <strong>获取 API 凭证</strong>
-            <ul className="list-disc pl-5 mt-2 space-y-1 text-muted-foreground">
+            <ul className="list-disc pl-4 md:pl-5 mt-2 space-y-1 text-muted-foreground">
               <li>在集市中心顶部右侧选择器中选择您的应用</li>
               <li>在 <strong>API 配置</strong> 面板中获取：
-                <ul className="list-[circle] pl-5 mt-1">
+                <ul className="list-[circle] pl-4 md:pl-5 mt-1">
                   <li><code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">Client ID</code>：客户端ID，用于标识您的身份</li>
                   <li><code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">Client Secret</code>：客户端密钥，用于签名验证（<strong>请妥善保管，切勿泄露</strong>）</li>
                 </ul>
@@ -74,18 +74,18 @@ export const howToUseSections: PolicySection[] = [
           </li>
           <li>
             <strong>使用 API 接口</strong>
-            <ul className="list-disc pl-5 mt-2 space-y-1 text-muted-foreground">
+            <ul className="list-disc pl-4 md:pl-5 mt-2 space-y-1 text-muted-foreground">
               <li>使用 API 接口创建积分流转服务</li>
               <li>参考文档：<a href="/docs/api" className="text-primary hover:underline">API 接口文档</a></li>
             </ul>
           </li>
         </ol>
 
-        <h3 id="3-2-online" className="text-lg font-semibold text-foreground mt-8 mb-4">3.2 使用在线服务</h3>
-        <ul className="list-disc pl-5 space-y-2 mb-4">
+        <h3 id="3-2-online" className="text-base md:text-lg font-semibold text-foreground mt-6 md:mt-8 mb-3 md:mb-4">3.2 使用在线服务</h3>
+        <ul className="list-disc pl-4 md:pl-5 space-y-2 mb-4">
           <li><strong>适用场景：</strong>无代码开发基础，或只用于简单的积分服务。</li>
           <li><strong>操作步骤：</strong>
-            <ol className="list-decimal pl-5 mt-2 space-y-1 text-muted-foreground">
+            <ol className="list-decimal pl-4 md:pl-5 mt-2 space-y-1 text-muted-foreground">
               <li>前往 <a href="/merchant" className="text-primary hover:underline">集市中心</a> 创建应用，获取 API 凭证</li>
               <li>选择应用，点击 <strong>在线收款</strong> 功能</li>
               <li>创建在线积分服务</li>
@@ -95,11 +95,11 @@ export const howToUseSections: PolicySection[] = [
           </li>
         </ul>
 
-        <h3 id="3-3-new-api" className="text-lg font-semibold text-foreground mt-8 mb-4">3.3 快速集成 New API</h3>
-        <ul className="list-disc pl-5 space-y-2 mb-4">
+        <h3 id="3-3-new-api" className="text-base md:text-lg font-semibold text-foreground mt-6 md:mt-8 mb-3 md:mb-4">3.3 快速集成 New API</h3>
+        <ul className="list-disc pl-4 md:pl-5 space-y-2 mb-4">
           <li><strong>适用场景：</strong>New API 站点，LINUX DO Credit 兼容 EasyPay 协议，公益站站长可直接集成。</li>
           <li><strong>操作步骤：</strong>
-            <ol className="list-decimal pl-5 mt-2 space-y-2 text-muted-foreground">
+            <ol className="list-decimal pl-4 md:pl-5 mt-2 space-y-2 text-muted-foreground">
               <li>
                 前往 <a href="/merchant" className="text-primary hover:underline">集市中心</a>，点击 <strong>创建应用</strong>，填写 New API 站点信息：
                 <div className="my-4">
@@ -145,7 +145,7 @@ export const howToUseSections: PolicySection[] = [
                     <DocsTableBody>
                       <DocsTableRow>
                         <DocsTableCell>支付地址</DocsTableCell>
-                        <DocsTableCell><code className="bg-muted px-1 rounded text-xs before:content-none after:content-none">http://credit.linux.do/epay/pay</code></DocsTableCell>
+                        <DocsTableCell><code className="bg-muted px-1 rounded text-xs before:content-none after:content-none">https://credit.linux.do/epay/pay</code></DocsTableCell>
                       </DocsTableRow>
                       <DocsTableRow>
                         <DocsTableCell>易支付商户ID</DocsTableCell>
@@ -201,9 +201,9 @@ export const howToUseSections: PolicySection[] = [
     title: "5. 服务（手续）费",
     content: (
       <div className="space-y-4 text-sm leading-relaxed">
-        <h3 id="5-1-rules" className="text-lg font-semibold text-foreground mt-8 mb-4">5.1 规则说明</h3>
+        <h3 id="5-1-rules" className="text-base md:text-lg font-semibold text-foreground mt-6 md:mt-8 mb-3 md:mb-4">5.1 规则说明</h3>
         <p>为了更好的维持 LINUX DO Credit 平台的积分服务机制，保证社区积分的生态可持续发展，我们会按照规范进行不同程度的服务（手续）费用收取。</p>
-        <ul className="list-disc pl-5 space-y-2">
+        <ul className="list-disc pl-4 md:pl-5 space-y-2">
           <li><strong>承担方：</strong>服务（手续）费默认<strong>由服务方承担</strong></li>
           <li><strong>消费方使用：</strong>不会产生额外费用</li>
           <li><strong>服务方实收：</strong>订单金额 - 服务（手续）费</li>
@@ -217,9 +217,9 @@ export const howToUseSections: PolicySection[] = [
           />
         </div>
 
-        <h3 id="5-2-dynamic" className="text-lg font-semibold text-foreground mt-8 mb-4">5.2 动态费率</h3>
+        <h3 id="5-2-dynamic" className="text-base md:text-lg font-semibold text-foreground mt-6 md:mt-8 mb-3 md:mb-4">5.2 动态费率</h3>
         <p>费率并非固定不变，会根据以下因素动态调整：</p>
-        <ul className="list-disc pl-5 space-y-1">
+        <ul className="list-disc pl-4 md:pl-5 space-y-1">
           <li>服务方平台等级</li>
           <li>服务方平台积分</li>
           <li>LINUX DO Credit 平台活动</li>
@@ -237,9 +237,9 @@ export const howToUseSections: PolicySection[] = [
     content: (
       <div className="space-y-4 text-sm leading-relaxed">
         <p>为了保障服务方与消费方的合法权益，当积分服务出现纠纷时，可使用争议功能。</p>
-        <ul className="list-disc pl-5 space-y-2">
+        <ul className="list-disc pl-4 md:pl-5 space-y-2">
           <li>作为服务方，您需要及时响应消费方的争议请求：
-            <ol className="list-decimal pl-5 mt-1 text-muted-foreground">
+            <ol className="list-decimal pl-4 md:pl-5 mt-1 text-muted-foreground">
               <li>在集市中心或通知中查看到 <strong>待处理的争议</strong></li>
               <li>查看消费方理由，选择操作：
                 <ul className="list-[circle] pl-5 mt-1">
@@ -263,10 +263,10 @@ export const howToUseSections: PolicySection[] = [
     title: "7. 积分转移",
     content: (
       <div className="space-y-4 text-sm leading-relaxed">
-        <ul className="list-disc pl-5 space-y-2">
+        <ul className="list-disc pl-4 md:pl-5 space-y-2">
           <li><strong>适用场景：</strong>向 LINUX DO Credit 平台内的其他用户进行积分转移。</li>
           <li><strong>操作步骤：</strong>
-            <ol className="list-decimal pl-5 mt-1 text-muted-foreground">
+            <ol className="list-decimal pl-4 md:pl-5 mt-1 text-muted-foreground">
               <li>进入 <strong>活动</strong> 页面，选择 <strong>积分转移</strong></li>
               <li>填写接收方信息：
                 <ul className="list-[circle] pl-5 mt-1">
@@ -293,15 +293,15 @@ export const howToUseSections: PolicySection[] = [
     content: (
       <div className="space-y-4 text-sm leading-relaxed">
         <p>您的 LINUX DO Credit 平台基础积分主要由 <strong>社区积分 (Community Balance)</strong> 划转而来。</p>
-        <ul className="list-disc pl-5 space-y-2">
+        <ul className="list-disc pl-4 md:pl-5 space-y-2">
           <li><strong>基本获取方式：</strong>通过在 LINUX DO 社区的活跃行为获得：
-            <ul className="list-[circle] pl-5 mt-1 text-muted-foreground">
+            <ul className="list-[circle] pl-4 md:pl-5 mt-1 text-muted-foreground">
               <li>发帖、回复、点赞等社区贡献</li>
               <li>详情可见 <a href="https://linux.do/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">LINUX DO 社区</a></li>
             </ul>
           </li>
           <li><strong>划转规则：</strong>
-            <ul className="list-[circle] pl-5 mt-1 text-muted-foreground">
+            <ul className="list-[circle] pl-4 md:pl-5 mt-1 text-muted-foreground">
               <li>划转时间：社区积分每日凌晨 <strong>00:00</strong> 自动划转至可用余额</li>
               <li>限制说明：划转前不可用于任何积分服务</li>
               <li>服务费用：目前不收取任何划转 <strong>服务费</strong></li>
@@ -317,8 +317,8 @@ export const howToUseSections: PolicySection[] = [
     content: (
       <div className="space-y-4 text-sm leading-relaxed">
         <p>您可以在 <strong>设置 (Settings)</strong> 页面管理您的账户信息。</p>
-        <h3 className="text-lg font-semibold text-foreground mt-4 mb-2">功能列表</h3>
-        <ul className="list-disc pl-5 space-y-1">
+        <h3 className="text-base md:text-lg font-semibold text-foreground mt-4 mb-2">功能列表</h3>
+        <ul className="list-disc pl-4 md:pl-5 space-y-1">
           <li><strong>个人资料：</strong>查看当前的账户信息和会员等级</li>
           <li><strong>安全设置：</strong>修改认证密码</li>
           <li><strong>通知设置：</strong>暂未上线</li>

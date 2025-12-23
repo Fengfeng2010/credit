@@ -74,7 +74,7 @@ export function LegalPageLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background relative selection:bg-primary/20">
+    <div className="min-h-screen bg-background relative selection:bg-primary/20 overflow-x-hidden">
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-primary origin-left z-50"
         style={{ scaleX }}
@@ -86,7 +86,7 @@ export function LegalPageLayout({
       </div>
 
       <div className="container relative z-10 max-w-7xl mx-auto px-4 md:px-6 py-8 lg:py-16">
-        <header className="mb-12 ">
+        <header className="mb-8 md:mb-12">
           <Link href="/" className="inline-block mb-8">
             <Button
               variant="ghost"
@@ -102,10 +102,10 @@ export function LegalPageLayout({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground mb-6">
+            <h1 className="text-2xl md:text-3xl lg:text-5xl font-bold tracking-tight text-foreground mb-6">
               {title}
             </h1>
-            <div className="flex items-center gap-4 text-xs text-muted-foreground mb-8">
+            <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground mb-8">
               <span className="flex items-center gap-1.5 bg-muted/50 px-3 py-1 rounded-full border border-border/50">
                 <FileText className="w-3.5 h-3.5" />
                 {sections.length} 个内容
@@ -116,8 +116,8 @@ export function LegalPageLayout({
               </span>
             </div>
             {description && (
-              <div className="w-full p-6 rounded-2xl bg-muted/30 border border-border/50 backdrop-blur-sm">
-                <div className="text-base text-muted-foreground leading-relaxed m-0">
+              <div className="w-full p-4 md:p-6 rounded-2xl bg-muted/30 border border-border/50 backdrop-blur-sm overflow-hidden">
+                <div className="text-sm md:text-base text-muted-foreground leading-relaxed m-0 break-all">
                   {description}
                 </div>
               </div>
@@ -125,7 +125,7 @@ export function LegalPageLayout({
           </motion.div>
         </header>
 
-        <div className="grid lg:grid-cols-12 gap-12 relative">
+        <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 relative">
           <aside className="hidden lg:block lg:col-span-3">
             <div className="sticky top-24 space-y-2 max-h-[calc(100vh-8rem)] overflow-y-auto pr-4 scrollbar-thin">
               <div className="text-sm font-semibold text-foreground mb-4 pl-3">目录</div>
@@ -175,7 +175,7 @@ export function LegalPageLayout({
             </div>
           </aside>
 
-          <main className="lg:col-span-9 lg:col-start-4 space-y-16 pb-20">
+          <main className="lg:col-span-9 lg:col-start-4 space-y-8 md:space-y-16 pb-20">
             {sections.map((section, index) => (
               <motion.section
                 key={section.value}
@@ -190,17 +190,17 @@ export function LegalPageLayout({
                   <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary text-sm font-bold opacity-50 group-hover:opacity-100 transition-opacity flex-shrink-0">
                     {index + 1}
                   </span>
-                  <h2 className="text-2xl font-semibold tracking-tight text-foreground group-hover:text-primary transition-colors duration-300">
+                  <h2 className="text-xl md:text-2xl font-semibold tracking-tight text-foreground group-hover:text-primary transition-colors duration-300">
                     {section.title.replace(/^\d+\.\s*/, '')}
                   </h2>
                 </div>
 
                 <div className={cn(
-                  "prose prose-neutral dark:prose-invert max-w-none",
+                  "prose prose-sm md:prose-base prose-neutral dark:prose-invert max-w-none",
                   "prose-p:text-muted-foreground prose-p:leading-7",
                   "prose-li:text-muted-foreground",
                   "prose-strong:text-foreground",
-                  "pl-12 border-l border-border/30 group-hover:border-primary/20 transition-colors duration-500"
+                  "pl-4 md:pl-12 border-l border-border/30 group-hover:border-primary/20 transition-colors duration-500"
                 )}>
                   {section.content}
                 </div>

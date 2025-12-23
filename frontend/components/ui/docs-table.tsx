@@ -5,10 +5,10 @@ const DocsTable = React.forwardRef<
   HTMLTableElement,
   React.HTMLAttributes<HTMLTableElement>
 >(({ className, ...props }, ref) => (
-  <div className="w-full overflow-hidden rounded-lg border border-border/50">
+  <div className="w-full overflow-x-auto rounded-lg border border-border/50">
     <table
       ref={ref}
-      className={cn("w-full text-sm text-left !my-0", className)}
+      className={cn("min-w-full text-sm text-left !my-0", className)}
       {...props}
     />
   </div>

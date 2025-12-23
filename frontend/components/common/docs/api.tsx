@@ -23,7 +23,7 @@ export const apiSections: PolicySection[] = [
     content: (
       <div className="space-y-4 text-sm leading-relaxed">
         <div className="bg-muted/50 border border-border/50 rounded-lg px-3 py-2">
-          <p className="text-muted-foreground m-0">官方服务接口暂未上限，敬请期待</p>
+          <p className="text-muted-foreground m-0">官方服务接口暂未上线，敬请期待</p>
         </div>
       </div>
     ),
@@ -37,16 +37,16 @@ export const apiSections: PolicySection[] = [
           <p className="text-muted-foreground m-0">兼容易支付、CodePay、VPay 等支付协议</p>
         </div>
 
-        <h3 id="2-1-overview" className="text-lg font-semibold text-foreground mt-8 mb-4">2.1 概览</h3>
-        <ul className="list-disc pl-5 space-y-2">
+        <h3 id="2-1-overview" className="text-base md:text-lg font-semibold text-foreground mt-6 md:mt-8 mb-3 md:mb-4">2.1 概览</h3>
+        <ul className="list-disc pl-4 md:pl-5 space-y-2">
           <li><strong>协议：</strong>EasyPay / CodePay / VPay 兼容协议</li>
           <li><strong>服务类型：</strong>仅支持 <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">type=epay</code></li>
           <li><strong>网关基址：</strong><code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">https://credit.linux.do/epay</code></li>
           <li><strong>订单有效期：</strong>取系统配置 <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">merchant_order_expire_minutes</code>（平台端设置）</li>
         </ul>
 
-        <h3 id="2-2-common-errors" className="text-lg font-semibold text-foreground mt-8 mb-4">2.2 常见错误</h3>
-        <ul className="list-disc pl-5 space-y-2">
+        <h3 id="2-2-common-errors" className="text-base md:text-lg font-semibold text-foreground mt-6 md:mt-8 mb-3 md:mb-4">2.2 常见错误</h3>
+        <ul className="list-disc pl-4 md:pl-5 space-y-2">
           <li><code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">不支持的请求类型</code>：<code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">type</code> 仅允许 <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">epay</code></li>
           <li><code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">签名验证失败</code>：参与签名字段与请求体需一致，密钥直接拼接</li>
           <li><code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">金额必须大于0</code> / <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">积分小数位数不能超过2位</code></li>
@@ -55,8 +55,8 @@ export const apiSections: PolicySection[] = [
           <li><code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">余额不足</code>：余额退回时用户积分不足</li>
         </ul>
 
-        <h3 id="2-3-flow" className="text-lg font-semibold text-foreground mt-8 mb-4">2.3 对接流程</h3>
-        <ol className="list-decimal pl-5 space-y-2">
+        <h3 id="2-3-flow" className="text-base md:text-lg font-semibold text-foreground mt-6 md:mt-8 mb-3 md:mb-4">2.3 对接流程</h3>
+        <ol className="list-decimal pl-4 md:pl-5 space-y-2">
           <li>控制台创建 API Key，记录 <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">pid</code>、<code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">key</code>，配置回调地址</li>
           <li>按“签名算法”生成 <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">sign</code>，调用 <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">/pay/submit.php</code> 创建积分流转服务并跳转认证界面</li>
           <li>可通过 <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">/api.php</code> 轮询结果，或等待异步回调</li>
@@ -64,17 +64,17 @@ export const apiSections: PolicySection[] = [
           <li>回调验签通过后返回 <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">success</code> 完成闭环</li>
         </ol>
 
-        <h3 id="2-4-auth-sign" className="text-lg font-semibold text-foreground mt-8 mb-4">2.4 鉴权与签名</h3>
-        <h4 className="font-medium text-foreground mt-4 mb-2">2.4.1 API Key</h4>
-        <ul className="list-disc pl-5 space-y-2 mb-4">
+        <h3 id="2-4-auth-sign" className="text-base md:text-lg font-semibold text-foreground mt-6 md:mt-8 mb-3 md:mb-4">2.4 鉴权与签名</h3>
+        <h4 className="font-medium text-foreground mt-3 md:mt-4 mb-2">2.4.1 API Key</h4>
+        <ul className="list-disc pl-4 md:pl-5 space-y-2 mb-4">
           <li><code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">pid</code>：Client ID</li>
           <li><code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">key</code>：Client Secret（妥善保管）</li>
           <li><code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">notify_url</code>：回调地址, 使用创建应用时设置的 <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">notify_url</code>；请求体中的 notify_url 仅参与签名，不会覆盖创建应用时设置的 notify_url。</li>
         </ul>
 
-        <h4 className="font-medium text-foreground mt-4 mb-2">2.4.2 签名算法</h4>
+        <h4 className="font-medium text-foreground mt-3 md:mt-4 mb-2">2.4.2 签名算法</h4>
         <div className="space-y-4">
-          <ol className="list-decimal pl-5 space-y-2">
+          <ol className="list-decimal pl-4 md:pl-5 space-y-2">
             <li>取所有非空字段（排除 <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">sign</code>、<code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">sign_type</code> 字段）</li>
             <li>将上述字段按 ASCII 升序，依次拼成 <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">k1=v1&k2=v2</code></li>
             <li>在末尾追加应用密钥：<code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">k1=v1&k2=v2{"{secret}"}</code></li>
@@ -87,8 +87,8 @@ sign=$(echo -n "\${payload}\${SECRET}" | md5)  # 输出小写`}
           />
         </div>
 
-        <h3 id="2-5-submit" className="text-lg font-semibold text-foreground mt-8 mb-4">2.5 积分流转服务</h3>
-        <ul className="list-disc pl-5 space-y-2 mb-6">
+        <h3 id="2-5-submit" className="text-base md:text-lg font-semibold text-foreground mt-6 md:mt-8 mb-3 md:mb-4">2.5 积分流转服务</h3>
+        <ul className="list-disc pl-4 md:pl-5 space-y-2 mb-6">
           <li><strong>方法：</strong>POST <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">/pay/submit.php</code></li>
           <li><strong>编码：</strong><code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">application/x-www-form-urlencoded</code></li>
           <li><strong>成功：</strong>验签通过后，平台自动创建积分流转服务，并跳转到认证界面（Location=<code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">https://credit.linux.do/paying?order_no=...</code>）</li>
@@ -171,8 +171,8 @@ sign=$(echo -n "\${payload}\${SECRET}" | md5)  # 输出小写`}
           language="bash"
         />
 
-        <h3 id="2-6-order" className="text-lg font-semibold text-foreground mt-8 mb-4">2.6 订单查询</h3>
-        <ul className="list-disc pl-5 space-y-2 mb-6">
+        <h3 id="2-6-order" className="text-base md:text-lg font-semibold text-foreground mt-6 md:mt-8 mb-3 md:mb-4">2.6 订单查询</h3>
+        <ul className="list-disc pl-4 md:pl-5 space-y-2 mb-6">
           <li><strong>方法：</strong>GET <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">/api.php</code></li>
           <li><strong>认证：</strong><code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">pid</code> + <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">key</code></li>
           <li><strong>说明：</strong><code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">trade_no</code> 必填；<code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">out_trade_no</code> 可选；<code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">act</code> 可传 <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">order</code>，后端不强校验。</li>
@@ -234,8 +234,8 @@ sign=$(echo -n "\${payload}\${SECRET}" | md5)  # 输出小写`}
         />
         <p className="text-muted-foreground text-xs"><strong className="text-foreground">补充：</strong><code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">status</code> 1=成功，0=失败/处理中；不存在会返回 HTTP 404 且 <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">{`{"code":-1,"msg":"服务不存在或已完成"}`}</code>。</p>
 
-        <h3 id="2-7-refund" className="text-lg font-semibold text-foreground mt-8 mb-4">2.7 订单退款</h3>
-        <ul className="list-disc pl-5 space-y-2 mb-6">
+        <h3 id="2-7-refund" className="text-base md:text-lg font-semibold text-foreground mt-6 md:mt-8 mb-3 md:mb-4">2.7 订单退款</h3>
+        <ul className="list-disc pl-4 md:pl-5 space-y-2 mb-6">
           <li><strong>方法：</strong>POST <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">/api.php</code></li>
           <li><strong>编码：</strong><code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">application/json</code> 或 <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono before:content-none after:content-none">application/x-www-form-urlencoded</code></li>
           <li><strong>限制：</strong>仅支持对已成功的积分流转服务进行积分的全额退回</li>
@@ -285,8 +285,8 @@ sign=$(echo -n "\${payload}\${SECRET}" | md5)  # 输出小写`}
         <p className="text-muted-foreground text-xs"><strong className="text-foreground">常见失败：</strong>服务不存在/未认证、金额不合法（&lt;=0 或小数超过 2 位）。</p>
 
 
-        <h3 id="2-8-notify" className="text-lg font-semibold text-foreground mt-8 mb-4">2.8 异步通知（认证成功）</h3>
-        <ul className="list-disc pl-5 space-y-2 mb-6">
+        <h3 id="2-8-notify" className="text-base md:text-lg font-semibold text-foreground mt-6 md:mt-8 mb-3 md:mb-4">2.8 异步通知（认证成功）</h3>
+        <ul className="list-disc pl-4 md:pl-5 space-y-2 mb-6">
           <li><strong>触发：</strong>认证成功后；失败自动重试，最多 5 次（单次 30s 超时）</li>
           <li><strong>目标：</strong>创建应用时设置的 notify_url</li>
           <li><strong>方式：</strong>HTTP GET</li>

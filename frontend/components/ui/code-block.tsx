@@ -50,7 +50,7 @@ export function CodeBlock({
         </button>
       </div>
       <div className="p-4 overflow-x-auto bg-transparent">
-        <pre className="font-mono text-xs leading-relaxed text-[#e0e0e0] !bg-transparent !p-0 !m-0 !border-0 shadow-none">
+        <pre className="font-mono text-xs leading-relaxed text-[#e0e0e0] !bg-transparent !p-0 !m-0 !border-0 shadow-none whitespace-pre-wrap break-all">
           <code className={cn("!bg-transparent !p-0 !m-0 !border-0 shadow-none font-mono", language && `language-${ language }`)}>
             {code}
           </code>

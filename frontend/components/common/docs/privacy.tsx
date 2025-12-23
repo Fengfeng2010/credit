@@ -35,7 +35,7 @@ export const privacySections: PolicySection[] = [
     content: (
       <div className="space-y-4 text-sm leading-relaxed">
         <p>我们深知数据安全的重要性，并采取业界领先的技术措施保护您的数据：</p>
-        <ul className="list-disc pl-5 space-y-2">
+        <ul className="list-disc pl-4 md:pl-5 space-y-2">
           <li><strong>存储地点：</strong>依照法规要求，我们收集和产生的用户个人信息，<strong>存储在独立</strong>的服务器上。我们不会将您的数据传输至境外管辖区。</li>
           <li><strong>加密技术：</strong>敏感数据（如 支付密码）在数据库中均采用高强度加密算法存储。数据传输全链路采用 SSL/TLS 1.3 协议进行加密，防止网络嗅探。</li>
           <li><strong>隔离机制：</strong>本平台数据与外部网络物理隔离，且独立于 LINUX DO 社区论坛主数据库，确保单一系统故障不会波及全局数据安全。</li>
@@ -50,7 +50,7 @@ export const privacySections: PolicySection[] = [
     content: (
       <div className="space-y-4 text-sm leading-relaxed">
         <p>我们收集的信息将仅用于以下目的：</p>
-        <ul className="list-disc pl-5 space-y-1">
+        <ul className="list-disc pl-4 md:pl-5 space-y-1">
           <li><strong>身份识别：</strong>用于确认您的社区身份，展示您的个人中心数据。</li>
           <li><strong>业务功能：</strong>处理您的支付指令、API 请求、回调通知及账单生成。</li>
           <li><strong>安全风控：</strong>利用 IP 及行为日志进行反作弊、反欺诈分析，识别恶意攻击行为，保护平台及其他用户的安全。</li>
@@ -66,7 +66,7 @@ export const privacySections: PolicySection[] = [
     content: (
       <div className="space-y-4 text-sm leading-relaxed">
         <p><strong>4.1 共享原则：</strong>我们坚持<strong>数据零共享</strong>策略。除以下极端情况外，我们不会向任何第三方（包括且不限于关联公司、支付宝、微信、银行、广告商）共享您的个人信息：</p>
-        <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+        <ul className="list-disc pl-4 md:pl-5 space-y-1 text-muted-foreground">
           <li>事先获得您的明确授权或同意；</li>
           <li>根据适用的法律法规、法律程序的要求、强制性的行政或司法要求所必须的情况下进行提供。</li>
         </ul>

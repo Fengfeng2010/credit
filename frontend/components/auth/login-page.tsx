@@ -180,7 +180,7 @@ export function LoginPage() {
             >
               <InputOTPGroup className="gap-2">
                 {[0, 1, 2, 3, 4, 5].map((i) => (
-                  <InputOTPSlot key={i} index={i} className="w-9 h-9 border-zinc-200 dark:border-zinc-800" />
+                  <InputOTPSlot key={i} index={i} className="w-9 h-9 border-input" />
                 ))}
               </InputOTPGroup>
             </InputOTP>
@@ -316,7 +316,7 @@ export function LoginPage() {
           )}
         </AnimatePresence>
 
-        <div className="mt-8 text-center text-xs text-neutral-400">
+        <div className="mt-8 text-center text-xs text-muted-foreground">
           &copy; {new Date().getFullYear()} LINUX DO Credit. 版权所有
         </div>
       </motion.div>

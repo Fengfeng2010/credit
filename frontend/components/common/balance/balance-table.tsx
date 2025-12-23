@@ -73,7 +73,7 @@ export function BalanceTable() {
         onValueChange={(value) => setActiveTab(value as OrderType | "all")}
         className="w-full"
       >
-        <TabsList className="flex p-0 gap-4 rounded-none w-full bg-transparent justify-start border-b border-border">
+        <TabsList className="flex p-0 gap-4 rounded-none w-full bg-transparent justify-start border-b border-border overflow-x-auto overflow-y-hidden">
           {TABS.map((tab) => (
             <TabsTrigger
               key={tab.value}

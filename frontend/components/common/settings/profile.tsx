@@ -157,43 +157,43 @@ function MembershipCard({
           </>
         )}
 
-        <div className={cn("relative h-full flex flex-col justify-between p-5", config.textColor)}>
+        <div className={cn("relative h-full flex flex-col justify-between p-3 sm:p-4 md:p-5", config.textColor)}>
           <div>
-            <div className="text-[10px] font-medium opacity-70 tracking-wider">
+            <div className="text-[8px] sm:text-[9px] md:text-[10px] font-medium opacity-70 tracking-wider">
               {config.nameEn}
             </div>
-            <div className="text-lg font-bold tracking-tight">
+            <div className="text-sm sm:text-base md:text-lg font-bold tracking-tight">
               {config.name}
             </div>
           </div>
 
-          <div className="space-y-1">
-            <div className="text-[10px] opacity-70 tracking-wide">平台分数</div>
-            <div className="text-2xl font-bold tracking-tight tabular-nums">
+          <div className="space-y-0.5 sm:space-y-1">
+            <div className="text-[8px] sm:text-[9px] md:text-[10px] opacity-70 tracking-wide">平台分数</div>
+            <div className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight tabular-nums">
               {score.toLocaleString()}
             </div>
           </div>
 
-          <div className="flex items-end justify-between">
-            <div className="text-[10px] opacity-70">
+          <div className="flex items-end justify-between gap-1">
+            <div className="text-[8px] sm:text-[9px] md:text-[10px] opacity-70">
               LINUX DO <span className="italic font-serif">Credit</span>
             </div>
             <div className="text-right">
-              <div className="text-[10px] opacity-70">分数范围</div>
-              <div className="text-[10px] font-medium tabular-nums">
+              <div className="text-[8px] sm:text-[9px] md:text-[10px] opacity-70">分数范围</div>
+              <div className="text-[8px] sm:text-[9px] md:text-[10px] font-medium tabular-nums">
                 {config.minScore.toLocaleString()} - {config.maxScore?.toLocaleString() || "∞"}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="absolute top-5 right-5">
+        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 md:top-5 md:right-5">
           {isAccessible ? (
-            <Avatar className="size-10 border-2 border-white/20">
+            <Avatar className="size-8 sm:size-9 md:size-10 border-2 border-white/20">
               <AvatarImage src={user?.avatar_url} alt={user?.nickname} />
               <AvatarFallback
                 className={cn(
-                  "text-sm font-semibold",
+                  "text-xs sm:text-sm font-semibold",
                   isDarkCard ? "bg-white/20 text-white" : "bg-black/20 text-black"
                 )}
               >
@@ -203,7 +203,7 @@ function MembershipCard({
           ) : (
             <div
               className={cn(
-                "px-2 py-1 rounded-full text-[10px] font-semibold backdrop-blur-sm",
+                "px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[8px] sm:text-[9px] md:text-[10px] font-semibold backdrop-blur-sm",
                 isDarkCard ? "bg-white/20 text-white" : "bg-black/20 text-black"
               )}
             >
@@ -335,16 +335,16 @@ export function ProfileMain() {
       <div className="space-y-4">
         <h2 className="font-medium text-sm text-muted-foreground">基本信息</h2>
 
-        <div className="flex items-start gap-18">
-          <Avatar className="size-16">
+        <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
+          <Avatar className="size-14 sm:size-16">
             <AvatarImage src={user.avatar_url} alt={user.nickname || user.username} />
-            <AvatarFallback className="text-xl">
+            <AvatarFallback className="text-lg sm:text-xl">
               {(user.nickname || user.username).slice(0, 2)}
             </AvatarFallback>
           </Avatar>
 
-          <div className="flex-1">
-            <div className="grid grid-cols-3 gap-6">
+          <div className="flex-1 w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               <div className="space-y-1">
                 <div className="text-xs text-muted-foreground">账户</div>
                 <div className="text-sm font-medium">@{user.username}</div>

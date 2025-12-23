@@ -26,7 +26,7 @@ export const termsSections: PolicySection[] = [
       <div className="space-y-4 text-sm leading-relaxed">
         <p><strong>2.1 社区技术服务：</strong>LINUX DO Credit 是基于 LINUX DO 社区生态构建的独立价值交换协议与技术系统。我们仅提供 API 接口调用、数据路由、账单管理等<strong>纯技术服务</strong>。</p>
         <p><strong>2.2 非金融机构申明：</strong></p>
-        <ul className="list-disc pl-5 space-y-2">
+        <ul className="list-disc pl-4 md:pl-5 space-y-2">
           <li><strong>非银行机构：</strong>我们不是商业银行、持牌支付机构（如支付宝、微信支付、银联）或清算机构。</li>
           <li><strong>不提供资金沉淀：</strong>平台不设立资金池，不提供真实法币存取款、转账汇款或支付结算服务。所有涉及资金流转的行为均发生于社区用户与社区支付渠道之间，不涉及真实货币。</li>
           <li><strong>不提供金融服务：</strong>平台不提供任何金融服务，包括但不限于贷款、融资、投资、理财、保险等金融服务。</li>
@@ -44,7 +44,7 @@ export const termsSections: PolicySection[] = [
       <div className="space-y-4 text-sm leading-relaxed">
         <p><strong>3.1 账号体系：</strong>本平台采用 LINUX DO Connect (OAuth) 授权登录体系。您必须拥有合法、有效的 LINUX DO 社区账号方可使用本服务。您的平台账号权益（包括但不限于信誉分、等级）与社区账号严格绑定。</p>
         <p><strong>3.2 匿名性与真实性：</strong></p>
-        <ul className="list-disc pl-5 space-y-2">
+        <ul className="list-disc pl-4 md:pl-5 space-y-2">
           <li><strong>无需实名：</strong>我们尊重您的隐私，不强制要求您提供居民身份证、护照或营业执照进行实名认证。</li>
           <li><strong>操作真实性：</strong>您承诺注册和使用的账号是您本人操作。严禁恶意注册、挂机脚本、自动化程序注册等破坏平台公平性的行为。</li>
         </ul>
@@ -58,8 +58,8 @@ export const termsSections: PolicySection[] = [
     content: (
       <div className="space-y-4 text-sm leading-relaxed">
         <p>您在使用本服务时，必须严格遵守《中华人民共和国网络安全法》、《计算机信息网络国际联网安全保护管理办法》等法律法规。<strong>严禁利用本平台从事以下活动（“红线条款”）：</strong></p>
-        <div className="bg-red-500/5 border border-red-500/20 rounded-lg p-4 space-y-3">
-          <ul className="list-disc pl-5 space-y-2 text-red-600 dark:text-red-400 font-medium">
+        <div className="bg-red-500/5 border border-red-500/20 rounded-lg p-3 md:p-4 space-y-3">
+          <ul className="list-disc pl-4 md:pl-5 space-y-2 text-red-600 dark:text-red-400 font-medium">
             <li><strong>危害国家安全：</strong>反对宪法所确定的基本原则、危害国家安全、泄露国家秘密、颠覆国家政权、破坏国家统一的；</li>
             <li><strong>非法信息服务：</strong>黑客攻击工具、DDoS 攻击服务、服务器爆破等其他非法信息服务平台；</li>
             <li><strong>黄赌毒关联：</strong>制作、复制、发布、传播淫秽、色情、赌博、暴力、凶杀、恐怖或者教唆犯罪的；</li>
@@ -90,7 +90,7 @@ export const termsSections: PolicySection[] = [
       <div className="space-y-4 text-sm leading-relaxed">
         <p><strong>6.1 基础免责：</strong>本平台服务按“现状”（As-Is）及“现有”（As-Available）状态提供。我们不保证服务一定能满足您的要求，也不保证服务不会中断，对服务的及时性、安全性、准确性都不作担保。</p>
         <p><strong>6.2 不可抗力：</strong>对于因以下原因导致的服务中断、数据丢失或账号损失，平台不承担赔偿责任：</p>
-        <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+        <ul className="list-disc pl-4 md:pl-5 space-y-1 text-muted-foreground">
           <li>自然灾害（台风、地震、海啸、洪水等）；</li>
           <li>政府行为、法律法规或政策调整、行政命令；</li>
           <li>电信部门技术调整、通讯线路中断、海底光缆故障；</li>

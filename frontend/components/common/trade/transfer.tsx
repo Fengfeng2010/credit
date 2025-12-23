@@ -173,14 +173,12 @@ export function Transfer() {
             <div className="grid gap-2">
               <Label htmlFor="amount">积分数量 <span className="text-red-500">*</span></Label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">LDC</span>
                 <Input
                   id="amount"
                   type="text"
                   placeholder="0.00"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="pl-12 font-mono"
                   disabled={loading}
                 />
               </div>

@@ -28,7 +28,7 @@ function CountingNumber({
   inViewMargin = '0px',
   inViewOnce = true,
   decimalSeparator = '.',
-  transition = { stiffness: 90, damping: 50 },
+  transition = { stiffness: 200, damping: 30 },
   decimalPlaces = 0,
   delay = 0,
   initiallyStable = false,
@@ -79,7 +79,7 @@ function CountingNumber({
           const [intPart, fracPart] = formatted.split(decimalSeparator);
           const paddedInt = intPart?.padStart(finalIntLength, '0') ?? '';
           formatted = fracPart
-            ? `${paddedInt}${decimalSeparator}${fracPart}`
+            ? `${ paddedInt }${ decimalSeparator }${ fracPart }`
             : paddedInt;
         }
 
@@ -97,14 +97,14 @@ function CountingNumber({
     if (padStart) {
       const [intPart, fracPart] = out.split(decimalSeparator);
       const paddedInt = (intPart ?? '').padStart(finalIntLength, '0');
-      out = fracPart ? `${paddedInt}${decimalSeparator}${fracPart}` : paddedInt;
+      out = fracPart ? `${ paddedInt }${ decimalSeparator }${ fracPart }` : paddedInt;
     }
     return out;
   };
 
   const zeroText = padStart
     ? '0'.padStart(finalIntLength, '0') +
-      (decimals > 0 ? decimalSeparator + '0'.repeat(decimals) : '')
+    (decimals > 0 ? decimalSeparator + '0'.repeat(decimals) : '')
     : '0' + (decimals > 0 ? decimalSeparator + '0'.repeat(decimals) : '');
 
   const initialText = initiallyStable ? formatValue(number) : zeroText;
