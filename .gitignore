@@ -2,6 +2,7 @@
 .idea/*
 !.idea/icon.png
 .vscode
+.pnpm-store/
 
 # logs
 logs
