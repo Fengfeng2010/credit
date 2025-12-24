@@ -20,11 +20,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/linux-do/credit/internal/db"
-	"github.com/linux-do/credit/internal/logger"
 	"github.com/linux-do/credit/internal/model"
 	"github.com/linux-do/credit/internal/service"
 	"github.com/linux-do/credit/internal/util"
@@ -37,15 +37,26 @@ import (
 // @Success 200 {object} util.ResponseAny
 // @Router /api/v1/oauth/login [get]
 func GetLoginURL(c *gin.Context) {
-	// 存储 State 到缓存
+	ctx := c.Request.Context()
+
+	// 生成 state
 	state := uuid.NewString()
-	cmd := db.Redis.Set(c.Request.Context(), db.PrefixedKey(fmt.Sprintf(OAuthStateCacheKeyFormat, state)), state, OAuthStateCacheKeyExpiration)
+	cmd := db.Redis.Set(ctx, db.PrefixedKey(fmt.Sprintf(OAuthStateCacheKeyFormat, state)), state, OAuthStateCacheKeyExpiration)
 	if cmd.Err() != nil {
 		c.JSON(http.StatusInternalServerError, util.Err(cmd.Err().Error()))
 		return
 	}
+
 	// 构造登录 URL
-	c.JSON(http.StatusOK, util.OK(oauthConf.AuthCodeURL(state)))
+	var authURL string
+	if oidcVerifier != nil {
+		// OIDC 模式：state 同时用作 nonce
+		authURL = oauthConf.AuthCodeURL(state, oidc.Nonce(state))
+	} else {
+		// 纯 OAuth2 模式
+		authURL = oauthConf.AuthCodeURL(state)
+	}
+	c.JSON(http.StatusOK, util.OK(authURL))
 }
 
 type CallbackRequest struct {
@@ -60,26 +71,30 @@ type CallbackRequest struct {
 // @Success 200 {object} util.ResponseAny
 // @Router /api/v1/oauth/callback [post]
 func Callback(c *gin.Context) {
-	// init req
+	// 解析请求
 	var req CallbackRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, util.Err(err.Error()))
 		return
 	}
-	// check state
-	cmd := db.Redis.Get(c.Request.Context(), db.PrefixedKey(fmt.Sprintf(OAuthStateCacheKeyFormat, req.State)))
+
+	ctx := c.Request.Context()
+
+	// 验证 state
+	cmd := db.Redis.Get(ctx, db.PrefixedKey(fmt.Sprintf(OAuthStateCacheKeyFormat, req.State)))
 	if cmd.Val() != req.State {
 		c.JSON(http.StatusBadRequest, util.Err(InvalidState))
 		return
 	}
-	db.Redis.Del(c.Request.Context(), db.PrefixedKey(fmt.Sprintf(OAuthStateCacheKeyFormat, req.State)))
-	// do oauth
-	user, err := doOAuth(c.Request.Context(), req.Code)
+	db.Redis.Del(ctx, db.PrefixedKey(fmt.Sprintf(OAuthStateCacheKeyFormat, req.State)))
+
+	// 执行 OAuth/OIDC 认证
+	user, err := doOAuth(ctx, req.Code, req.State)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, util.Err(err.Error()))
 		return
 	}
-	// bind to session
+
 	session := sessions.Default(c)
 	session.Set(UserIDKey, user.ID)
 	session.Set(UserNameKey, user.Username)
@@ -87,9 +102,8 @@ func Callback(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, util.Err(err.Error()))
 		return
 	}
-	// response
+
 	c.JSON(http.StatusOK, util.OKNil())
-	logger.InfoF(c.Request.Context(), "[OAuthCallback] %d %s", user.ID, user.Username)
 }
 
 type BasicUserInfo struct {

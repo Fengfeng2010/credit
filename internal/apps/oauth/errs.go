@@ -17,6 +17,8 @@ limitations under the License.
 package oauth
 
 const (
-	UnAuthorized = "未登录"
-	InvalidState = "非法登录请求"
+	UnAuthorized        = "未登录"
+	InvalidState        = "非法登录请求"
+	IDTokenVerifyFailed = "ID Token 验证失败"
+	NonceMismatch       = "nonce 不匹配，可能存在重放攻击"
 )

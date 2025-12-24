@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 
 	"github.com/gin-contrib/sessions"
@@ -46,38 +47,59 @@ func GetUserIDFromContext(c *gin.Context) uint64 {
 	return GetUserIDFromSession(session)
 }
 
-func doOAuth(ctx context.Context, code string) (*model.User, error) {
-	// init trace
+// doOAuth 执行 OAuth2/OIDC 认证流程
+func doOAuth(ctx context.Context, code string, nonce string) (*model.User, error) {
 	ctx, span := otel_trace.Start(ctx, "OAuth")
 	defer span.End()
 
-	// get token
+	// 使用授权码换取 Token
 	token, err := oauthConf.Exchange(ctx, code)
 	if err != nil {
 		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
-	// get user info
-	client := oauthConf.Client(ctx, token)
-	resp, err := client.Get(config.Config.OAuth2.UserEndpoint)
-	if err != nil {
-		span.SetStatus(codes.Error, err.Error())
-		return nil, err
-	}
-	defer func(body io.ReadCloser) { _ = resp.Body.Close() }(resp.Body)
-
-	// load user info
-	responseData, err := io.ReadAll(resp.Body)
-	if err != nil {
-		span.SetStatus(codes.Error, err.Error())
-		return nil, err
-	}
 	var userInfo model.OAuthUserInfo
-	if err = json.Unmarshal(responseData, &userInfo); err != nil {
-		span.SetStatus(codes.Error, err.Error())
-		return nil, err
+
+	if oidcVerifier != nil {
+		if rawIDToken, ok := token.Extra("id_token").(string); ok {
+			idToken, verifyErr := oidcVerifier.Verify(ctx, rawIDToken)
+			if verifyErr != nil {
+				err := fmt.Errorf("%s: %w", IDTokenVerifyFailed, verifyErr)
+				span.SetStatus(codes.Error, err.Error())
+				return nil, err
+			}
+			if nonce != "" && idToken.Nonce != nonce {
+				span.SetStatus(codes.Error, NonceMismatch)
+				return nil, errors.New(NonceMismatch)
+			}
+			if claimsErr := idToken.Claims(&userInfo); claimsErr != nil {
+				span.SetStatus(codes.Error, claimsErr.Error())
+				return nil, claimsErr
+			}
+		}
 	}
+
+	if userInfo.GetID() == 0 {
+		client := oauthConf.Client(ctx, token)
+		resp, httpErr := client.Get(config.Config.OAuth2.UserEndpoint)
+		if httpErr != nil {
+			span.SetStatus(codes.Error, httpErr.Error())
+			return nil, httpErr
+		}
+		defer resp.Body.Close()
+
+		responseData, readErr := io.ReadAll(resp.Body)
+		if readErr != nil {
+			span.SetStatus(codes.Error, readErr.Error())
+			return nil, readErr
+		}
+		if unmarshalErr := json.Unmarshal(responseData, &userInfo); unmarshalErr != nil {
+			span.SetStatus(codes.Error, unmarshalErr.Error())
+			return nil, unmarshalErr
+		}
+	}
+
 	if !userInfo.Active {
 		err = errors.New(common.BannedAccount)
 		span.SetStatus(codes.Error, err.Error())
@@ -89,7 +111,7 @@ func doOAuth(ctx context.Context, code string) (*model.User, error) {
 
 	txByUsername := db.DB(ctx).Where("username = ?", userInfo.Username).First(&user)
 	if txByUsername.Error != nil {
-		txByID := user.GetByID(db.DB(ctx), userInfo.Id)
+		txByID := user.GetByID(db.DB(ctx), userInfo.GetID())
 		if txByID == nil {
 			// ID 存在但 username 不匹配(用户改名)
 			if err = user.CheckActive(); err != nil {
@@ -114,7 +136,7 @@ func doOAuth(ctx context.Context, code string) (*model.User, error) {
 			return nil, txByUsername.Error
 		}
 	} else {
-		if user.ID != userInfo.Id {
+		if user.ID != userInfo.GetID() {
 			// username 相同但 ID 不同(账户注销后被新用户占用)
 			if err = user.CreateWithInitialCredit(ctx, &userInfo); err != nil {
 				span.SetStatus(codes.Error, err.Error())
