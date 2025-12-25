@@ -17,6 +17,7 @@ limitations under the License.
 package worker
 
 import (
+	"log"
 	"math/rand"
 	"strings"
 	"time"
@@ -40,6 +41,8 @@ func StartWorker() error {
 			Queues:          buildQueuesFromConfig(),
 			StrictPriority:  config.Config.Worker.StrictPriority,
 			RetryDelayFunc: func(n int, err error, t *asynq.Task) time.Duration {
+				log.Printf("[RetryDelayFunc] 任务类型: %s, 重试次数: %d, 错误: %v", t.Type(), n, err)
+
 				// 针对积分更新任务使用更长的重试间隔 + 随机抖动
 				if t.Type() == task.UpdateSingleUserGamificationScoreTask {
 					var baseDelay time.Duration
@@ -48,8 +51,8 @@ func StartWorker() error {
 					} else {
 						baseDelay = 60 * time.Second
 					}
-					// 指数退避
-					delay := baseDelay * time.Duration(1<<uint(n-1))
+					// 指数退避：n=0 时 delay=baseDelay，之后翻倍
+					delay := baseDelay * time.Duration(1<<uint(n))
 					if delay > 30*time.Minute {
 						delay = 30 * time.Minute
 					}
