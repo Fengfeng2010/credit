@@ -202,7 +202,7 @@ export function DataPanel() {
             </TooltipProvider>
           </div>
           <div className="text-xl font-semibold pt-2">
-            {userLoading ? '-' : <CountingNumber number={remainQuota} decimalPlaces={2} />}
+            {userLoading ? '-' : remainQuota < 0 ? "无限制" : <CountingNumber number={remainQuota} decimalPlaces={2} />}
           </div>
         </div>
       </div>
