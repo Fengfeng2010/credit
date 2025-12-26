@@ -413,7 +413,7 @@ export function ProfileMain() {
                       <TooltipTrigger asChild>
                         <Info className="h-3 w-3 cursor-help" />
                       </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-[200px]">
+                      <TooltipContent side="top" className="max-w-[280px] text-center">
                         <p className="text-xs">上一次从社区同步的积分，积分会在每日划转时通过系统定时任务自动同步更新</p>
                       </TooltipContent>
                     </Tooltip>
