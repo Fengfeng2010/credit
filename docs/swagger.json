@@ -1353,6 +1353,9 @@
                 "redirect_uri": {
                     "type": "string",
                     "maxLength": 100
+                },
+                "test_mode": {
+                    "type": "boolean"
                 }
             }
         },
@@ -1378,6 +1381,9 @@
                 "redirect_uri": {
                     "type": "string",
                     "maxLength": 100
+                },
+                "test_mode": {
+                    "type": "boolean"
                 }
             }
         },
@@ -1575,7 +1581,8 @@
                         "payment",
                         "transfer",
                         "community",
-                        "online"
+                        "online",
+                        "test"
                     ]
                 }
             }

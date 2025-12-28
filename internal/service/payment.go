@@ -17,11 +17,16 @@ limitations under the License.
 package service
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
+	"github.com/hibiken/asynq"
 	"github.com/linux-do/credit/internal/common"
 	"github.com/linux-do/credit/internal/model"
+	"github.com/linux-do/credit/internal/task"
+	"github.com/linux-do/credit/internal/task/scheduler"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 )
@@ -126,4 +131,34 @@ func GetTodayUsedAmount(db *gorm.DB, userID uint64) (decimal.Decimal, error) {
 	}
 
 	return todayTotalAmount, nil
+}
+
+// ValidateTestModePayment 验证测试模式下的支付权限
+// 返回 error：nil 表示允许支付，非 nil 表示拒绝支付
+func ValidateTestModePayment(currentUserID, merchantUserID uint64, isTestMode bool) error {
+	if currentUserID == merchantUserID {
+		if !isTestMode {
+			return errors.New(common.CannotPaySelf)
+		}
+	} else if isTestMode {
+		return errors.New(common.TestModeCannotProcessOrder)
+	}
+	return nil
+}
+
+// EnqueueMerchantNotify 下发商户回调任务
+func EnqueueMerchantNotify(orderID uint64, clientID string) error {
+	notifyPayload, _ := json.Marshal(map[string]interface{}{
+		"order_id":  orderID,
+		"client_id": clientID,
+	})
+	if _, err := scheduler.AsynqClient.Enqueue(
+		asynq.NewTask(task.MerchantPaymentNotifyTask, notifyPayload),
+		asynq.Queue(task.QueueWebhook),
+		asynq.MaxRetry(10),
+		asynq.Timeout(30*time.Second),
+	); err != nil {
+		return fmt.Errorf("下发商户回调任务失败: %w", err)
+	}
+	return nil
 }

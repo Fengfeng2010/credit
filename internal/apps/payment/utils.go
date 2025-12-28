@@ -32,6 +32,7 @@ import (
 	"github.com/linux-do/credit/internal/common"
 	"github.com/linux-do/credit/internal/db"
 	"github.com/linux-do/credit/internal/model"
+	"github.com/linux-do/credit/internal/service"
 	"github.com/linux-do/credit/internal/util"
 	"github.com/redis/go-redis/v9"
 	"github.com/shopspring/decimal"
@@ -45,19 +46,16 @@ func HandleParseOrderNoError(c *gin.Context, err error) bool {
 	}
 
 	errMsg := err.Error()
-	if errMsg == OrderNotFound {
-		c.JSON(http.StatusNotFound, util.Err(OrderNotFound))
-	} else if errMsg == MerchantInfoNotFound {
-		c.JSON(http.StatusInternalServerError, util.Err(MerchantInfoNotFound))
-	} else if errMsg == CannotPayOwnOrder {
-		c.JSON(http.StatusBadRequest, util.Err(CannotPayOwnOrder))
-	} else if errMsg == OrderNoFormatError {
-		c.JSON(http.StatusBadRequest, util.Err(OrderNoFormatError))
-	} else if errMsg == PayConfigNotFound {
-		c.JSON(http.StatusInternalServerError, util.Err(PayConfigNotFound))
-	} else if errMsg == "未登录" {
-		c.JSON(http.StatusUnauthorized, util.Err("未登录"))
-	} else {
+	switch errMsg {
+	case OrderNotFound:
+		c.JSON(http.StatusNotFound, util.Err(errMsg))
+	case MerchantInfoNotFound, PayConfigNotFound:
+		c.JSON(http.StatusInternalServerError, util.Err(errMsg))
+	case common.CannotPaySelf, common.TestModeCannotProcessOrder, OrderNoFormatError:
+		c.JSON(http.StatusBadRequest, util.Err(errMsg))
+	case common.UnAuthorized:
+		c.JSON(http.StatusUnauthorized, util.Err(errMsg))
+	default:
 		c.JSON(http.StatusInternalServerError, util.Err(errMsg))
 	}
 	return true
@@ -70,6 +68,7 @@ type OrderContext struct {
 	CurrentUser       *model.User
 	PayerPayConfig    *model.UserPayConfig
 	MerchantPayConfig *model.UserPayConfig
+	MerchantAPIKey    *model.MerchantAPIKey
 }
 
 // ParseOrderNo 解析订单号，获取订单上下文信息
@@ -98,11 +97,6 @@ func ParseOrderNo(c *gin.Context, orderNo string) (*OrderContext, error) {
 
 	currentUser, _ := util.GetFromContext[*model.User](c, oauth.UserObjKey)
 
-	// 验证不是商户自己支付自己的订单
-	if currentUser.ID == merchantUser.ID {
-		return nil, errors.New(CannotPayOwnOrder)
-	}
-
 	orderNoStr, errDecrypt := util.Decrypt(merchantUser.SignKey, orderNo)
 	if errDecrypt != nil {
 		return nil, errors.New(OrderNoFormatError)
@@ -113,10 +107,26 @@ func ParseOrderNo(c *gin.Context, orderNo string) (*OrderContext, error) {
 		return nil, errors.New(OrderNoFormatError)
 	}
 
+	var apiKey model.MerchantAPIKey
+	if err := db.DB(c.Request.Context()).
+		Where("client_id = (SELECT client_id FROM orders WHERE id = ?)", orderID).
+		First(&apiKey).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New(OrderNotFound)
+		}
+		return nil, err
+	}
+
+	// 验证测试模式下的支付权限
+	if err := service.ValidateTestModePayment(currentUser.ID, merchantUser.ID, apiKey.TestMode); err != nil {
+		return nil, err
+	}
+
 	ctx := &OrderContext{
-		OrderID:      orderID,
-		MerchantUser: &merchantUser,
-		CurrentUser:  currentUser,
+		OrderID:        orderID,
+		MerchantUser:   &merchantUser,
+		CurrentUser:    currentUser,
+		MerchantAPIKey: &apiKey,
 	}
 
 	// 获取付款用户的支付配置（用于限额检查）

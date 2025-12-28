@@ -1362,6 +1362,9 @@ const docTemplate = `{
                 "redirect_uri": {
                     "type": "string",
                     "maxLength": 100
+                },
+                "test_mode": {
+                    "type": "boolean"
                 }
             }
         },
@@ -1387,6 +1390,9 @@ const docTemplate = `{
                 "redirect_uri": {
                     "type": "string",
                     "maxLength": 100
+                },
+                "test_mode": {
+                    "type": "boolean"
                 }
             }
         },
@@ -1584,7 +1590,8 @@ const docTemplate = `{
                         "payment",
                         "transfer",
                         "community",
-                        "online"
+                        "online",
+                        "test"
                     ]
                 }
             }

@@ -17,14 +17,12 @@ limitations under the License.
 package payment
 
 const (
-	OrderNotFound            = "订单不存在或已完成"
-	OrderStatusInvalid       = "订单状态不允许支付"
-	OrderExpired             = "订单已过期"
-	MerchantInfoNotFound     = "商户信息不存在"
-	RecipientNotFound        = "收款人不存在"
-	OrderNoFormatError       = "订单号格式错误"
-	CannotPayOwnOrder        = "不能支付自己的订单"
-	CannotTransferToSelf     = "不能转账给自己"
-	PayConfigNotFound        = "支付配置不存在"
-	SystemConfigValueInvalid = "系统配置 %s 的值无法转换为整数: %v"
+	OrderNotFound        = "订单不存在或已完成"
+	OrderStatusInvalid   = "订单状态不允许支付"
+	OrderExpired         = "订单已过期"
+	MerchantInfoNotFound = "商户信息不存在"
+	RecipientNotFound    = "收款人不存在"
+	OrderNoFormatError   = "订单号格式错误"
+	CannotTransferToSelf = "不能转账给自己"
+	PayConfigNotFound    = "支付配置不存在"
 )

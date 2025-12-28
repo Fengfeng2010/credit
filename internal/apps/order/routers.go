@@ -30,7 +30,7 @@ import (
 type TransactionListRequest struct {
 	Page          int        `json:"page" form:"page" binding:"min=1"`
 	PageSize      int        `json:"page_size" form:"page_size" binding:"min=1,max=100"`
-	Type          string     `json:"type" form:"type" binding:"omitempty,oneof=receive payment transfer community online"`
+	Type          string     `json:"type" form:"type" binding:"omitempty,oneof=receive payment transfer community online test"`
 	Status        string     `json:"status" form:"status" binding:"omitempty,oneof=success pending failed expired disputing refund refused"`
 	ClientID      string     `json:"client_id" form:"client_id" binding:"omitempty"`
 	StartTime     *time.Time `json:"startTime" form:"startTime" binding:"omitempty"`
@@ -110,7 +110,7 @@ func ListTransactions(c *gin.Context) {
 			} else {
 				baseQuery = baseQuery.Where("orders.type = ? AND (orders.payer_user_id = ? OR orders.payee_user_id = ?)", orderType, user.ID, user.ID)
 			}
-		case model.OrderTypePayment, model.OrderTypeTransfer:
+		case model.OrderTypePayment, model.OrderTypeTransfer, model.OrderTypeTest:
 			// payment、transfer 类型：查询当前用户作为付款方的订单
 			baseQuery = baseQuery.Where("orders.type = ? AND orders.payer_user_id = ?", orderType, user.ID)
 		}

@@ -24,6 +24,9 @@ const (
 	DailyLimitExceeded          = "已超过每日限额"
 	PayKeyIncorrect             = "支付密钥错误"
 	CannotPaySelf               = "不能给自己付款"
+	TestModeCannotProcessOrder  = "测试模式下无法处理订单"
+	TestModeOrderRemark         = "[测试模式] 此订单为测试订单，未实际扣款"
+	UnAuthorized                = "未登录"
 )
 
 const (

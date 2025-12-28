@@ -33,6 +33,7 @@ type CreateAPIKeyRequest struct {
 	AppDescription string `json:"app_description" binding:"max=100"`
 	RedirectURI    string `json:"redirect_uri" binding:"omitempty,max=100,url"`
 	NotifyURL      string `json:"notify_url" binding:"required,max=100,url"`
+	TestMode       bool   `json:"test_mode"`
 }
 
 type UpdateAPIKeyRequest struct {
@@ -41,6 +42,7 @@ type UpdateAPIKeyRequest struct {
 	AppDescription string `json:"app_description" binding:"omitempty,max=100"`
 	RedirectURI    string `json:"redirect_uri" binding:"omitempty,max=100,url"`
 	NotifyURL      string `json:"notify_url" binding:"omitempty,max=100,url"`
+	TestMode       bool   `json:"test_mode"`
 }
 
 type APIKeyListResponse struct {
@@ -73,6 +75,7 @@ func CreateAPIKey(c *gin.Context) {
 		AppDescription: req.AppDescription,
 		RedirectURI:    req.RedirectURI,
 		NotifyURL:      req.NotifyURL,
+		TestMode:       req.TestMode,
 	}
 
 	if err := db.DB(c.Request.Context()).Create(&apiKey).Error; err != nil {
@@ -137,6 +140,7 @@ func UpdateAPIKey(c *gin.Context) {
 		"app_description":  req.AppDescription,
 		"redirect_uri":     req.RedirectURI,
 		"notify_url":       req.NotifyURL,
+		"test_mode":        req.TestMode,
 	}
 
 	if err := db.DB(c.Request.Context()).

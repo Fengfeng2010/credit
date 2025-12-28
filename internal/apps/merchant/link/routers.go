@@ -17,14 +17,12 @@ limitations under the License.
 package link
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hibiken/asynq"
 	"github.com/linux-do/credit/internal/apps/merchant"
 	"github.com/linux-do/credit/internal/apps/oauth"
 	"github.com/linux-do/credit/internal/common"
@@ -32,8 +30,6 @@ import (
 	"github.com/linux-do/credit/internal/db"
 	"github.com/linux-do/credit/internal/model"
 	"github.com/linux-do/credit/internal/service"
-	"github.com/linux-do/credit/internal/task"
-	"github.com/linux-do/credit/internal/task/scheduler"
 	"github.com/linux-do/credit/internal/util"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
@@ -105,6 +101,7 @@ type PaymentLinkDetail struct {
 	Remark      string          `json:"remark"`
 	CreatedAt   time.Time       `json:"created_at"`
 	AppName     string          `json:"app_name"`
+	RedirectURI string          `json:"redirect_uri"`
 }
 
 // ListPaymentLinks 获取支付链接列表
@@ -119,7 +116,7 @@ func ListPaymentLinks(c *gin.Context) {
 	var paymentLinks []PaymentLinkDetail
 	if err := db.DB(c.Request.Context()).
 		Table("merchant_payment_links").
-		Select("merchant_payment_links.id, merchant_payment_links.token, merchant_payment_links.amount, merchant_payment_links.product_name, merchant_payment_links.remark, merchant_payment_links.created_at, merchant_api_keys.app_name").
+		Select("merchant_payment_links.id, merchant_payment_links.token, merchant_payment_links.amount, merchant_payment_links.product_name, merchant_payment_links.remark, merchant_payment_links.created_at, merchant_api_keys.app_name, merchant_api_keys.redirect_uri").
 		Joins("JOIN merchant_api_keys ON merchant_api_keys.id = merchant_payment_links.merchant_api_key_id").
 		Where("merchant_payment_links.merchant_api_key_id = ? AND merchant_payment_links.deleted_at IS NULL", apiKey.ID).
 		Order("merchant_payment_links.created_at DESC").
@@ -231,9 +228,9 @@ func PayByLink(c *gin.Context) {
 		return
 	}
 
-	// 不能给自己付款
-	if currentUser.ID == merchantUser.ID {
-		c.JSON(http.StatusBadRequest, util.Err(common.CannotPaySelf))
+	// 验证测试模式下的支付权限
+	if err := service.ValidateTestModePayment(currentUser.ID, merchantUser.ID, merchantAPIKey.TestMode); err != nil {
+		c.JSON(http.StatusBadRequest, util.Err(err.Error()))
 		return
 	}
 
@@ -251,22 +248,34 @@ func PayByLink(c *gin.Context) {
 		return
 	}
 
+	isTestMode := merchantAPIKey.TestMode
+
 	if err := db.DB(c.Request.Context()).Transaction(
 		func(tx *gorm.DB) error {
-			// 检查每日限额
-			if err := service.CheckDailyLimit(tx, currentUser.ID, paymentLink.Amount, payerPayConfig.DailyLimit); err != nil {
-				return err
+			// 非测试模式：检查每日限额
+			if !isTestMode {
+				if err := service.CheckDailyLimit(tx, currentUser.ID, paymentLink.Amount, payerPayConfig.DailyLimit); err != nil {
+					return err
+				}
 			}
 
 			// 计算手续费
 			_, merchantAmount, feePercent := service.CalculateFee(paymentLink.Amount, merchantPayConfig.FeeRate)
-			feeRemark := fmt.Sprintf("[系统]: 收取商家%d%%手续费", feePercent)
 
-			remark := req.Remark
-			if remark != "" {
-				remark = remark + " " + feeRemark
+			var remark string
+			var orderType model.OrderType
+
+			if isTestMode {
+				remark = common.TestModeOrderRemark
+				orderType = model.OrderTypeTest
 			} else {
-				remark = feeRemark
+				feeRemark := fmt.Sprintf("[系统]: 收取商家%d%%手续费", feePercent)
+				if req.Remark != "" {
+					remark = req.Remark + " " + feeRemark
+				} else {
+					remark = feeRemark
+				}
+				orderType = model.OrderTypeOnline
 			}
 
 			// 创建订单
@@ -277,7 +286,7 @@ func PayByLink(c *gin.Context) {
 				ClientID:    merchantAPIKey.ClientID,
 				Amount:      paymentLink.Amount,
 				Status:      model.OrderStatusSuccess,
-				Type:        model.OrderTypeOnline,
+				Type:        orderType,
 				Remark:      remark,
 				TradeTime:   time.Now(),
 				ExpiresAt:   time.Now(),
@@ -286,43 +295,29 @@ func PayByLink(c *gin.Context) {
 				return err
 			}
 
-			// 扣减用户余额
-			if err := service.DeductUserBalance(tx, currentUser.ID, paymentLink.Amount); err != nil {
-				return err
-			}
+			// 非测试模式：扣减用户余额和增加商户余额
+			if !isTestMode {
+				if err := service.DeductUserBalance(tx, currentUser.ID, paymentLink.Amount); err != nil {
+					return err
+				}
 
-			// 增加商户余额和积分
-			merchantScoreIncrease := paymentLink.Amount.Mul(merchantPayConfig.ScoreRate).Round(0).IntPart()
-			if err := service.AddMerchantBalance(tx, merchantUser.ID, merchantAmount, merchantScoreIncrease); err != nil {
-				return err
+				merchantScoreIncrease := paymentLink.Amount.Mul(merchantPayConfig.ScoreRate).Round(0).IntPart()
+				if err := service.AddMerchantBalance(tx, merchantUser.ID, merchantAmount, merchantScoreIncrease); err != nil {
+					return err
+				}
 			}
 
 			if config.Config.App.IsProduction() && util.IsLocalhost(merchantAPIKey.NotifyURL) {
 				return nil
 			}
 
-			notifyPayload, _ := json.Marshal(map[string]interface{}{
-				"order_id":  order.ID,
-				"client_id": merchantAPIKey.ClientID,
-			})
-			if _, errTask := scheduler.AsynqClient.Enqueue(
-				asynq.NewTask(task.MerchantPaymentNotifyTask, notifyPayload),
-				asynq.Queue(task.QueueWebhook),
-				asynq.MaxRetry(10),
-				asynq.Timeout(30*time.Second),
-			); errTask != nil {
-				return fmt.Errorf("下发商户回调任务失败: %w", errTask)
-			}
-
-			return nil
+			return service.EnqueueMerchantNotify(order.ID, merchantAPIKey.ClientID)
 		},
 	); err != nil {
 		errMsg := err.Error()
 		switch errMsg {
-		case common.InsufficientBalance:
-			c.JSON(http.StatusBadRequest, util.Err(common.InsufficientBalance))
-		case common.DailyLimitExceeded:
-			c.JSON(http.StatusBadRequest, util.Err(common.DailyLimitExceeded))
+		case common.InsufficientBalance, common.DailyLimitExceeded:
+			c.JSON(http.StatusBadRequest, util.Err(errMsg))
 		default:
 			c.JSON(http.StatusInternalServerError, util.Err(errMsg))
 		}

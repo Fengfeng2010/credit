@@ -17,7 +17,6 @@ limitations under the License.
 package payment
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -26,13 +25,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/hibiken/asynq"
 	"github.com/linux-do/credit/internal/apps/oauth"
 	"github.com/linux-do/credit/internal/common"
 	"github.com/linux-do/credit/internal/config"
 	"github.com/linux-do/credit/internal/service"
-	"github.com/linux-do/credit/internal/task"
-    "github.com/linux-do/credit/internal/task/scheduler"
 
 	"github.com/gin-gonic/gin"
 	"github.com/linux-do/credit/internal/db"
@@ -424,37 +420,49 @@ func PayMerchantOrder(c *gin.Context) {
 				return errors.New(OrderExpired)
 			}
 
-			// 检查每日限额
-			if err := service.CheckDailyLimit(tx, orderCtx.CurrentUser.ID, order.Amount, orderCtx.PayerPayConfig.DailyLimit); err != nil {
-				return err
+			isTestMode := orderCtx.MerchantAPIKey.TestMode
+
+			// 非测试模式：检查每日限额
+			if !isTestMode {
+				if err := service.CheckDailyLimit(tx, orderCtx.CurrentUser.ID, order.Amount, orderCtx.PayerPayConfig.DailyLimit); err != nil {
+					return err
+				}
 			}
 
 			// 计算手续费
 			_, merchantAmount, feePercent := service.CalculateFee(order.Amount, orderCtx.MerchantPayConfig.FeeRate)
-			feeRemark := fmt.Sprintf("[系统]: 收取商家%d%%手续费", feePercent)
 
-			// 更新订单状态和备注
-			if order.Remark != "" {
-				order.Remark = order.Remark + " " + feeRemark
-			} else {
-				order.Remark = feeRemark
-			}
+			// 更新订单状态
 			order.Status = model.OrderStatusSuccess
 			order.PayerUserID = orderCtx.CurrentUser.ID
 			order.TradeTime = time.Now()
+
+			if isTestMode {
+				order.Type = model.OrderTypeTest
+				order.Remark = common.TestModeOrderRemark
+			} else {
+				feeRemark := fmt.Sprintf("[系统]: 收取商家%d%%手续费", feePercent)
+				if order.Remark != "" {
+					order.Remark = order.Remark + " " + feeRemark
+				} else {
+					order.Remark = feeRemark
+				}
+			}
+
 			if err := tx.Save(&order).Error; err != nil {
 				return err
 			}
 
-			// 扣减用户余额
-			if err := service.DeductUserBalance(tx, orderCtx.CurrentUser.ID, order.Amount); err != nil {
-				return err
-			}
+			// 非测试模式：扣减用户余额和增加商户余额
+			if !isTestMode {
+				if err := service.DeductUserBalance(tx, orderCtx.CurrentUser.ID, order.Amount); err != nil {
+					return err
+				}
 
-			// 增加商户余额和积分
-			merchantScoreIncrease := order.Amount.Mul(orderCtx.MerchantPayConfig.ScoreRate).Round(0).IntPart()
-			if err := service.AddMerchantBalance(tx, orderCtx.MerchantUser.ID, merchantAmount, merchantScoreIncrease); err != nil {
-				return err
+				merchantScoreIncrease := order.Amount.Mul(orderCtx.MerchantPayConfig.ScoreRate).Round(0).IntPart()
+				if err := service.AddMerchantBalance(tx, orderCtx.MerchantUser.ID, merchantAmount, merchantScoreIncrease); err != nil {
+					return err
+				}
 			}
 
 			expireKey := db.PrefixedKey(fmt.Sprintf(OrderExpireKeyFormat, order.ID))
@@ -462,33 +470,16 @@ func PayMerchantOrder(c *gin.Context) {
 				log.Printf("[Payment] 删除订单过期key失败: order_id=%d, error=%v", order.ID, err)
 			}
 
-			// 下发商户回调任务
-			notifyPayload, _ := json.Marshal(map[string]interface{}{
-				"order_id":  order.ID,
-				"client_id": order.ClientID,
-			})
-			if _, errTask := scheduler.AsynqClient.Enqueue(
-				asynq.NewTask(task.MerchantPaymentNotifyTask, notifyPayload),
-				asynq.Queue(task.QueueWebhook),
-				asynq.MaxRetry(10),
-				asynq.Timeout(30*time.Second),
-			); errTask != nil {
-				return fmt.Errorf("下发商户回调任务失败: %w", errTask)
-			}
-
-			return nil
+			return service.EnqueueMerchantNotify(order.ID, order.ClientID)
 		},
 	); err != nil {
 		errMsg := err.Error()
-		if errMsg == common.InsufficientBalance {
-			c.JSON(http.StatusBadRequest, util.Err(common.InsufficientBalance))
-		} else if errMsg == OrderNotFound {
-			c.JSON(http.StatusNotFound, util.Err(OrderNotFound))
-		} else if errMsg == OrderExpired {
-			c.JSON(http.StatusBadRequest, util.Err(OrderExpired))
-		} else if errMsg == common.DailyLimitExceeded {
-			c.JSON(http.StatusBadRequest, util.Err(common.DailyLimitExceeded))
-		} else {
+		switch errMsg {
+		case common.InsufficientBalance, OrderExpired, common.DailyLimitExceeded:
+			c.JSON(http.StatusBadRequest, util.Err(errMsg))
+		case OrderNotFound:
+			c.JSON(http.StatusNotFound, util.Err(errMsg))
+		default:
 			c.JSON(http.StatusInternalServerError, util.Err(errMsg))
 		}
 		return

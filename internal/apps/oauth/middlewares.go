@@ -20,6 +20,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/linux-do/credit/internal/common"
 	"github.com/linux-do/credit/internal/db"
 	"github.com/linux-do/credit/internal/logger"
 	"github.com/linux-do/credit/internal/model"
@@ -36,7 +37,7 @@ func LoginRequired() gin.HandlerFunc {
 		// load user
 		userId := GetUserIDFromContext(c)
 		if userId <= 0 {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error_msg": UnAuthorized, "data": nil})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error_msg": common.UnAuthorized, "data": nil})
 			return
 		}
 

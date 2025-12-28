@@ -16,6 +16,8 @@ definitions:
       redirect_uri:
         maxLength: 100
         type: string
+      test_mode:
+        type: boolean
     required:
     - app_homepage_url
     - app_name
@@ -38,6 +40,8 @@ definitions:
       redirect_uri:
         maxLength: 100
         type: string
+      test_mode:
+        type: boolean
     type: object
   dispute.CloseDisputeRequest:
     properties:
@@ -179,6 +183,7 @@ definitions:
         - transfer
         - community
         - online
+        - test
         type: string
     type: object
   payment.CreateOrderRequest:
