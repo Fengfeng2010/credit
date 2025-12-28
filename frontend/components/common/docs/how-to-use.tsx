@@ -270,8 +270,8 @@ export const howToUseSections: PolicySection[] = [
               <li>进入 <strong>活动</strong> 页面，选择 <strong>积分转移</strong></li>
               <li>填写接收方信息：
                 <ul className="list-[circle] pl-5 mt-1">
-                  <li><strong>接收方账户：</strong>对方的用户名</li>
-                  <li><strong>接收方 ID：</strong>对方的用户ID，确保积分去向准确</li>
+                  <li><strong>接收方账户：</strong>对方的 LINUX DO 用户名</li>
+                  <li><strong>接收方 ID：</strong>对方的用户 LINUX DO 用户 ID，确保积分去向准确</li>
                   <li><strong>积分数量：</strong>转移的积分数量</li>
                 </ul>
               </li>

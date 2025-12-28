@@ -44,19 +44,19 @@ export function Transfer() {
   /* 处理表单提交（第一步）*/
   const handleFormSubmit = () => {
     if (!recipientUsername.trim()) {
-      toast.error("请输入接收方账户")
+      toast.error("请输入接收方 LINUX DO 用户名")
       return
     }
 
     if (!recipientId.trim()) {
-      toast.error("请输入接收方 ID")
+      toast.error("请输入接收方 LINUX DO ID")
       return
     }
 
     /* 验证ID是否为有效数字*/
     const idNum = parseInt(recipientId)
     if (isNaN(idNum) || idNum <= 0) {
-      toast.error("接收方 ID 格式不正确")
+      toast.error("接收方 LINUX DO ID 格式不正确")
       return
     }
 
@@ -142,30 +142,30 @@ export function Transfer() {
             <div className="grid gap-2">
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="recipient">接收方账户 <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="recipient">接收方用户名 <span className="text-red-500">*</span></Label>
                   <Input
                     id="recipient"
                     type="text"
-                    placeholder="输入账户"
+                    placeholder="输入用户名"
                     value={recipientUsername}
                     onChange={(e) => setRecipientUsername(e.target.value)}
                     disabled={loading}
                   />
-                  <p className="text-xs text-muted-foreground">请输入接收方的账户</p>
+                  <p className="text-xs text-muted-foreground">请输入接收方 LINUX DO 用户名</p>
                 </div>
 
                 <div className="grid gap-2">
-                  <Label htmlFor="recipientId">接收方 ID <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="recipientId">接收方 LINUX DO ID <span className="text-red-500">*</span></Label>
                   <Input
                     id="recipientId"
                     type="text"
                     value={recipientId}
                     onChange={(e) => setRecipientId(e.target.value)}
-                    placeholder="输入接收方 ID"
+                    placeholder="输入接收方 LINUX DO ID"
                     className="font-mono"
                     disabled={loading}
                   />
-                  <p className="text-xs text-muted-foreground">请输入接收方的用户 ID</p>
+                  <p className="text-xs text-muted-foreground">请输入接收方的用户 LINUX DO ID</p>
                 </div>
               </div>
             </div>
