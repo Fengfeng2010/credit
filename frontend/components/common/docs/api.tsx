@@ -9,7 +9,7 @@ import {
   DocsTableCell,
 } from "@/components/ui/docs-table"
 
-export const DOCS_LAST_UPDATED = "2025-12-22"
+export const DOCS_LAST_UPDATED = "2025-12-28"
 
 /**
  * ------------------------------------------------------------------
