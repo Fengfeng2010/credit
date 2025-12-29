@@ -582,3 +582,112 @@ func Transfer(c *gin.Context) {
 
 	c.JSON(http.StatusOK, util.OKNil())
 }
+
+// MerchantPayoutRequest 商户付款请求
+type MerchantPayoutRequest struct {
+	RecipientID       uint64          `json:"recipient_id,string" binding:"required"`
+	RecipientUsername string          `json:"recipient_username" binding:"required"`
+	Amount            decimal.Decimal `json:"amount" binding:"required"`
+	MerchantOrderNo   string          `json:"out_trade_no" binding:"max=64"`
+	Remark            string          `json:"remark" binding:"max=100"`
+}
+
+// MerchantPayout 商户付款接口（商户向用户付款）
+// @Tags payment
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "Basic Auth (base64(client_id:client_secret))"
+// @Param request body MerchantPayoutRequest true "付款请求"
+// @Success 200 {object} util.ResponseAny
+// @Router /pay/payout [post]
+func MerchantPayout(c *gin.Context) {
+	var req MerchantPayoutRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, util.Err(err.Error()))
+		return
+	}
+
+	if err := util.ValidateAmount(req.Amount); err != nil {
+		c.JSON(http.StatusBadRequest, util.Err(err.Error()))
+		return
+	}
+
+	apiKey, _ := util.GetFromContext[*model.MerchantAPIKey](c, APIKeyObjKey)
+
+	var orderID uint64
+
+	if err := db.DB(c.Request.Context()).Transaction(func(tx *gorm.DB) error {
+		// 验证收款人是否存在且用户名匹配
+		var recipient model.User
+		if err := tx.Where("id = ? AND username = ?", req.RecipientID, req.RecipientUsername).First(&recipient).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return errors.New(RecipientNotFound)
+			}
+			return err
+		}
+
+		// 获取商户用户信息
+		var merchantUser model.User
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE", Options: "NOWAIT"}).
+			Where("id = ? AND is_active = ?", apiKey.UserID, true).
+			First(&merchantUser).Error; err != nil {
+			return errors.New(MerchantInfoNotFound)
+		}
+
+		// 获取商户支付配置（用于计算手续费）
+		var merchantPayConfig model.UserPayConfig
+		if err := merchantPayConfig.GetByPayScore(tx, merchantUser.PayScore); err != nil {
+			return errors.New(PayConfigNotFound)
+		}
+
+		// 计算手续费（商户承担）
+		_, recipientAmount, feePercent := service.CalculateFee(req.Amount, merchantPayConfig.FeeRate)
+
+		// 创建payout类型订单
+		order := model.Order{
+			OrderName:       "商户付款",
+			ClientID:        apiKey.ClientID,
+			MerchantOrderNo: req.MerchantOrderNo,
+			PayerUserID:     merchantUser.ID,
+			PayeeUserID:     recipient.ID,
+			Amount:          req.Amount,
+			Status:          model.OrderStatusSuccess,
+			Type:            model.OrderTypePayout,
+			Remark:          req.Remark,
+			TradeTime:       time.Now(),
+			ExpiresAt:       time.Now().Add(24 * time.Hour),
+		}
+
+		feeRemark := fmt.Sprintf("[系统]: 收取商家%d%%手续费", feePercent)
+		if order.Remark != "" {
+			order.Remark = order.Remark + " " + feeRemark
+		} else {
+			order.Remark = feeRemark
+		}
+
+		if err := tx.Create(&order).Error; err != nil {
+			return err
+		}
+		orderID = order.ID
+
+		// 扣减商户余额（全额：本金+手续费）
+		if err := service.DeductMerchantBalance(tx, merchantUser.ID, req.Amount); err != nil {
+			return err
+		}
+
+		// 增加收款人余额（扣除手续费后的金额）
+		if err := service.AddUserBalance(tx, recipient.ID, recipientAmount); err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		c.JSON(http.StatusBadRequest, util.Err(err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, util.OK(gin.H{
+		"trade_no":     strconv.FormatUint(orderID, 10),
+		"out_trade_no": req.MerchantOrderNo,
+	}))
+}

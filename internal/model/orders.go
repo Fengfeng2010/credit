@@ -38,6 +38,7 @@ const (
 	OrderTypeCommunity OrderType = "community"
 	OrderTypeOnline    OrderType = "online"
 	OrderTypeTest      OrderType = "test"
+	OrderTypePayout    OrderType = "payout"
 )
 
 type OrderStatus string

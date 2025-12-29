@@ -1338,6 +1338,45 @@
                 }
             }
         },
+        "/pay/payout": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "payment"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Basic Auth (base64(client_id:client_secret))",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "付款请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/payment.MerchantPayoutRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.ResponseAny"
+                        }
+                    }
+                }
+            }
+        },
         "/pay/submit.php": {
             "post": {
                 "consumes": [
@@ -1664,6 +1703,34 @@
                     "maxLength": 64
                 },
                 "payment_type": {
+                    "type": "string"
+                },
+                "remark": {
+                    "type": "string",
+                    "maxLength": 100
+                }
+            }
+        },
+        "payment.MerchantPayoutRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "recipient_id",
+                "recipient_username"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "out_trade_no": {
+                    "type": "string",
+                    "maxLength": 64
+                },
+                "recipient_id": {
+                    "type": "string",
+                    "example": "0"
+                },
+                "recipient_username": {
                     "type": "string"
                 },
                 "remark": {

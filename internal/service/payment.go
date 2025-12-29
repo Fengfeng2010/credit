@@ -102,6 +102,37 @@ func AddMerchantBalance(tx *gorm.DB, merchantUserID uint64, amount decimal.Decim
 		}).Error
 }
 
+// DeductMerchantBalance 扣减商户余额（不涉及支付分）
+// 用于商户向用户付款场景
+func DeductMerchantBalance(tx *gorm.DB, merchantUserID uint64, amount decimal.Decimal) error {
+	result := tx.Model(&model.User{}).
+		Where("id = ? AND available_balance >= ?", merchantUserID, amount).
+		UpdateColumns(map[string]interface{}{
+			"available_balance": gorm.Expr("available_balance - ?", amount),
+			"total_payment":     gorm.Expr("total_payment + ?", amount),
+		})
+
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return errors.New(common.InsufficientBalance)
+	}
+
+	return nil
+}
+
+// AddUserBalance 增加用户余额（不涉及支付分）
+// 用于商户向用户付款场景
+func AddUserBalance(tx *gorm.DB, userID uint64, amount decimal.Decimal) error {
+	return tx.Model(&model.User{}).
+		Where("id = ?", userID).
+		UpdateColumns(map[string]interface{}{
+			"available_balance": gorm.Expr("available_balance + ?", amount),
+			"total_receive":     gorm.Expr("total_receive + ?", amount),
+		}).Error
+}
+
 // CalculateFee 计算手续费和商户实收金额
 // 返回：手续费、商户实收金额、手续费百分比
 func CalculateFee(amount decimal.Decimal, feeRate decimal.Decimal) (fee decimal.Decimal, merchantAmount decimal.Decimal, feePercent int64) {

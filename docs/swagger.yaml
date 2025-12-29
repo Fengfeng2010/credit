@@ -215,6 +215,26 @@ definitions:
     - amount
     - order_name
     type: object
+  payment.MerchantPayoutRequest:
+    properties:
+      amount:
+        type: number
+      out_trade_no:
+        maxLength: 64
+        type: string
+      recipient_id:
+        example: "0"
+        type: string
+      recipient_username:
+        type: string
+      remark:
+        maxLength: 100
+        type: string
+    required:
+    - amount
+    - recipient_id
+    - recipient_username
+    type: object
   payment.PayOrderRequest:
     properties:
       order_no:
@@ -1254,6 +1274,31 @@ paths:
             $ref: '#/definitions/util.ResponseAny'
       tags:
       - user
+  /pay/payout:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Basic Auth (base64(client_id:client_secret))
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 付款请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/payment.MerchantPayoutRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.ResponseAny'
+      tags:
+      - payment
   /pay/submit.php:
     post:
       consumes:
