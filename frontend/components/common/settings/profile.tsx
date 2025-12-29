@@ -261,7 +261,7 @@ export function ProfileMain() {
   }, [api])
 
   React.useEffect(() => {
-    if (!api || levelConfigs.length === 0) return
+    if (!api || levelConfigs.length === 0 || !currentLevel) return
 
     const scrollToCurrentLevel = () => {
       const currentLevelIndex = levelConfigs.findIndex(
