@@ -30,7 +30,7 @@ import (
 type TransactionListRequest struct {
 	Page          int        `json:"page" form:"page" binding:"min=1"`
 	PageSize      int        `json:"page_size" form:"page_size" binding:"min=1,max=100"`
-	Type          string     `json:"type" form:"type" binding:"omitempty,oneof=receive payment transfer community online test"`
+	Type          string     `json:"type" form:"type" binding:"omitempty,oneof=receive payment transfer community online test redenvelope"`
 	Status        string     `json:"status" form:"status" binding:"omitempty,oneof=success pending failed expired disputing refund refused"`
 	ClientID      string     `json:"client_id" form:"client_id" binding:"omitempty"`
 	StartTime     *time.Time `json:"startTime" form:"startTime" binding:"omitempty"`
@@ -82,37 +82,42 @@ func ListTransactions(c *gin.Context) {
 
 	clientIDHandled := false
 	if req.Type != "" {
-		orderType := model.OrderType(req.Type)
+		// redenvelope 类型不过滤（红包记录在单独的表中，这里返回空结果）
+		if req.Type == "redenvelope" {
+			baseQuery = baseQuery.Where("1 = 0") // 返回空结果
+		} else {
+			orderType := model.OrderType(req.Type)
 
-		switch orderType {
-		case model.OrderTypeReceive:
-			// receive 类型：查询当前用户作为收款方的 payment 订单
-			baseQuery = baseQuery.Where("orders.type = ? AND orders.payee_user_id = ?", model.OrderTypePayment, user.ID)
-		case model.OrderTypeCommunity:
-			// community 类型：查询当前用户作为收款方的 community 订单
-			baseQuery = baseQuery.Where("orders.type = ? AND orders.payee_user_id = ?", orderType, user.ID)
-		case model.OrderTypeOnline:
-			// online 类型：商家可查看自己 client_id 的所有订单，普通用户只能查看与自己相关的订单
-			if req.ClientID != "" {
-				clientIDHandled = true
-				var count int64
-				if err := db.DB(c.Request.Context()).Model(&model.MerchantAPIKey{}).
-					Where("client_id = ? AND user_id = ?", req.ClientID, user.ID).
-					Count(&count).Error; err != nil {
-					c.JSON(http.StatusInternalServerError, util.Err(err.Error()))
-					return
-				}
-				if count > 0 {
-					baseQuery = baseQuery.Where("orders.type = ? AND orders.client_id = ?", orderType, req.ClientID)
+			switch orderType {
+			case model.OrderTypeReceive:
+				// receive 类型：查询当前用户作为收款方的 payment 订单
+				baseQuery = baseQuery.Where("orders.type = ? AND orders.payee_user_id = ?", model.OrderTypePayment, user.ID)
+			case model.OrderTypeCommunity:
+				// community 类型：查询当前用户作为收款方的 community 订单
+				baseQuery = baseQuery.Where("orders.type = ? AND orders.payee_user_id = ?", orderType, user.ID)
+			case model.OrderTypeOnline:
+				// online 类型：商家可查看自己 client_id 的所有订单，普通用户只能查看与自己相关的订单
+				if req.ClientID != "" {
+					clientIDHandled = true
+					var count int64
+					if err := db.DB(c.Request.Context()).Model(&model.MerchantAPIKey{}).
+						Where("client_id = ? AND user_id = ?", req.ClientID, user.ID).
+						Count(&count).Error; err != nil {
+						c.JSON(http.StatusInternalServerError, util.Err(err.Error()))
+						return
+					}
+					if count > 0 {
+						baseQuery = baseQuery.Where("orders.type = ? AND orders.client_id = ?", orderType, req.ClientID)
+					} else {
+						baseQuery = baseQuery.Where("orders.type = ? AND orders.client_id = ? AND (orders.payer_user_id = ? OR orders.payee_user_id = ?)", orderType, req.ClientID, user.ID, user.ID)
+					}
 				} else {
-					baseQuery = baseQuery.Where("orders.type = ? AND orders.client_id = ? AND (orders.payer_user_id = ? OR orders.payee_user_id = ?)", orderType, req.ClientID, user.ID, user.ID)
+					baseQuery = baseQuery.Where("orders.type = ? AND (orders.payer_user_id = ? OR orders.payee_user_id = ?)", orderType, user.ID, user.ID)
 				}
-			} else {
-				baseQuery = baseQuery.Where("orders.type = ? AND (orders.payer_user_id = ? OR orders.payee_user_id = ?)", orderType, user.ID, user.ID)
+			case model.OrderTypePayment, model.OrderTypeTransfer, model.OrderTypeTest:
+				// payment、transfer 类型：查询当前用户作为付款方的订单
+				baseQuery = baseQuery.Where("orders.type = ? AND orders.payer_user_id = ?", orderType, user.ID)
 			}
-		case model.OrderTypePayment, model.OrderTypeTransfer, model.OrderTypeTest:
-			// payment、transfer 类型：查询当前用户作为付款方的订单
-			baseQuery = baseQuery.Where("orders.type = ? AND orders.payer_user_id = ?", orderType, user.ID)
 		}
 	} else {
 		baseQuery = baseQuery.Where("orders.payee_user_id = ? OR orders.payer_user_id = ?", user.ID, user.ID)

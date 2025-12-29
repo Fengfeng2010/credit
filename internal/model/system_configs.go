@@ -36,6 +36,7 @@ const (
 	ConfigKeyDisputeTimeWindowHours     = "dispute_time_window_hours"     // 商家争议时间窗口（小时）
 	ConfigKeyNewUserInitialCredit       = "new_user_initial_credit"       // 新用户注册初始积分
 	ConfigKeyNewUserProtectionDays      = "new_user_protection_days"      // 新用户保护期天数（期内不扣分）
+	ConfigKeyRedEnvelopeEnabled         = "red_envelope_enabled"          // 红包功能是否启用（1启用，0禁用）
 )
 
 const (
@@ -101,4 +102,14 @@ func GetDecimalByKey(ctx context.Context, key string, precision int32) (decimal.
 
 	// 裁剪到指定小数位数
 	return value.Truncate(precision), nil
+}
+
+// IsRedEnvelopeEnabled 检查红包功能是否启用
+func IsRedEnvelopeEnabled(ctx context.Context) bool {
+	value, err := GetIntByKey(ctx, ConfigKeyRedEnvelopeEnabled)
+	if err != nil {
+		// 如果配置不存在或出错，默认启用
+		return true
+	}
+	return value == 1
 }

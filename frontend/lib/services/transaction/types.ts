@@ -1,7 +1,7 @@
 /**
  * 订单类型
  */
-export type OrderType = 'receive' | 'payment' | 'transfer' | 'community' | 'online' | 'test';
+export type OrderType = 'receive' | 'payment' | 'transfer' | 'community' | 'online' | 'test' | 'red_envelope_send' | 'red_envelope_receive';
 
 /**
  * 订单状态

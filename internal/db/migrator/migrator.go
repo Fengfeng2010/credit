@@ -40,6 +40,8 @@ func Migrate() {
 		&model.Order{},
 		&model.SystemConfig{},
 		&model.Dispute{},
+		&model.RedEnvelope{},
+		&model.RedEnvelopeClaim{},
 	); err != nil {
 		log.Fatalf("[PostgreSQL] auto migrate failed: %v\n", err)
 	}
@@ -91,6 +93,11 @@ func initSystemConfigs() {
 			Key:         model.ConfigKeyNewUserProtectionDays,
 			Value:       "30",
 			Description: "新用户保护期天数，期内积分下降不扣分",
+		},
+		{
+			Key:         model.ConfigKeyRedEnvelopeEnabled,
+			Value:       "0",
+			Description: "红包功能是否启用（1启用，0禁用）",
 		},
 	}
 
