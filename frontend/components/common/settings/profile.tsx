@@ -276,7 +276,7 @@ export function ProfileMain() {
     return () => {
       api.off("reInit", scrollToCurrentLevel)
     }
-  }, [api, currentLevel.level, levelConfigs])
+  }, [api, currentLevel, levelConfigs])
 
   if (loading) {
     return (
