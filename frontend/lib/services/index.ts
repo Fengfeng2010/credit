@@ -1,21 +1,21 @@
 /**
  * 服务层统一入口
  * 提供所有业务服务的访问接口
- * 
+ *
  * @example
  * ```typescript
  * // 推荐：使用统一的 services 对象
  * import services from '@/lib/services';
- * 
+ *
  * const user = await services.auth.getUserInfo();
  * const transactions = await services.transaction.getTransactions({ page: 1, page_size: 20 });
  * ```
- * 
+ *
  * @example
  * ```typescript
  * // 按需导入：直接导入特定服务
  * import { AuthService } from '@/lib/services';
- * 
+ *
  * const user = await AuthService.getUserInfo();
  * ```
  */
@@ -28,11 +28,12 @@ import { UserService } from './user';
 import { DisputeService } from './dispute';
 import { ConfigService } from './config';
 import { DashboardService } from './dashboard';
+import { LeaderboardService } from "./leaderboard";
 
 /**
  * 服务对象
  * 集中导出所有业务服务
- * 
+ *
  * @description
  * 推荐使用此对象访问所有服务，保持代码风格统一
  */
@@ -53,6 +54,8 @@ const services = {
   config: ConfigService,
   /** 仪表板服务 */
   dashboard: DashboardService,
+  /** 排行榜服务 */
+  leaderboard: LeaderboardService,
 } as const;
 
 export default services;
@@ -179,4 +182,18 @@ export type {
   GetTopCustomersRequest,
 } from './dashboard';
 
-
+// 排行榜服务
+export { LeaderboardService } from "./leaderboard";
+export type {
+  PeriodType,
+  MetricType,
+  TrendType,
+  LeaderboardPeriod,
+  LeaderboardEntry,
+  LeaderboardListRequest,
+  LeaderboardListResponse,
+  UserRankInfo,
+  UserRankResponse,
+  MetricInfo,
+  LeaderboardMetadataResponse,
+} from "./leaderboard";
