@@ -261,7 +261,7 @@ func RefundMerchantOrder(c *gin.Context) {
 	if err := db.DB(c.Request.Context()).Transaction(func(tx *gorm.DB) error {
 		var order model.Order
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
-			Where("id = ? AND client_id = ? AND status = ? AND amount = ?", req.TradeNo, req.ClientID, model.OrderStatusSuccess, req.Amount).
+			Where("id = ? AND client_id = ? AND status = ? AND amount = ? AND type IN ?", req.TradeNo, req.ClientID, model.OrderStatusSuccess, req.Amount, []model.OrderType{model.OrderTypePayment, model.OrderTypeOnline}).
 			First(&order).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return errors.New(OrderNotFound)
