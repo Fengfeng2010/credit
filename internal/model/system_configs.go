@@ -106,39 +106,3 @@ func GetDecimalByKey(ctx context.Context, key string, precision int32) (decimal.
 	// 裁剪到指定小数位数
 	return value.Truncate(precision), nil
 }
-
-// IsRedEnvelopeEnabled 检查红包功能是否启用
-func IsRedEnvelopeEnabled(ctx context.Context) (bool, error) {
-	value, err := GetIntByKey(ctx, ConfigKeyRedEnvelopeEnabled)
-	if err != nil {
-		return false, fmt.Errorf("获取红包功能配置失败: %w", err)
-	}
-	return value == 1, nil
-}
-
-// GetRedEnvelopeMaxAmount 获取单个红包的最大积分上限
-func GetRedEnvelopeMaxAmount(ctx context.Context) (decimal.Decimal, error) {
-	value, err := GetDecimalByKey(ctx, ConfigKeyRedEnvelopeMaxAmount, 2)
-	if err != nil {
-		return decimal.Zero, fmt.Errorf("获取红包最大金额配置失败: %w", err)
-	}
-	return value, nil
-}
-
-// GetRedEnvelopeDailyLimit 获取每日发红包的个数限制
-func GetRedEnvelopeDailyLimit(ctx context.Context) (int, error) {
-	value, err := GetIntByKey(ctx, ConfigKeyRedEnvelopeDailyLimit)
-	if err != nil {
-		return 0, fmt.Errorf("获取红包每日限额配置失败: %w", err)
-	}
-	return value, nil
-}
-
-// GetRedEnvelopeFeeRate 获取红包手续费率
-func GetRedEnvelopeFeeRate(ctx context.Context) (decimal.Decimal, error) {
-	value, err := GetDecimalByKey(ctx, ConfigKeyRedEnvelopeFeeRate, 2)
-	if err != nil {
-		return decimal.Zero, fmt.Errorf("获取红包手续费率配置失败: %w", err)
-	}
-	return value, nil
-}

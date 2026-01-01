@@ -25,6 +25,7 @@ import (
 	"github.com/linux-do/credit/internal/db"
 	"github.com/linux-do/credit/internal/logger"
 	"github.com/linux-do/credit/internal/model"
+	"github.com/linux-do/credit/internal/service"
 	"gorm.io/gorm"
 )
 
@@ -64,48 +65,53 @@ func refundExpiredRedEnvelopes(ctx context.Context) {
 		// 处理每个过期红包
 		for _, envelope := range expiredEnvelopes {
 			if err := db.DB(ctx).Transaction(func(tx *gorm.DB) error {
-			// 更新红包状态为已过期
-			if err := tx.Model(&model.RedEnvelope{}).
-				Where("id = ? AND status = ?", envelope.ID, model.RedEnvelopeStatusActive).
-				Updates(map[string]interface{}{
-					"status":           model.RedEnvelopeStatusExpired,
-					"remaining_amount": 0,
-					"remaining_count":  0,
-				}).Error; err != nil {
-				return err
-			}
-
-			// 退还剩余金额给创建者
-			if envelope.RemainingAmount.IsPositive() {
-				if err := tx.Model(&model.User{}).
-					Where("id = ?", envelope.CreatorID).
-					Update("available_balance", gorm.Expr("available_balance + ?", envelope.RemainingAmount)).Error; err != nil {
+				// 更新红包状态为已过期
+				if err := tx.Model(&model.RedEnvelope{}).
+					Where("id = ? AND status = ?", envelope.ID, model.RedEnvelopeStatusActive).
+					Updates(map[string]interface{}{
+						"status":           model.RedEnvelopeStatusExpired,
+						"remaining_amount": 0,
+						"remaining_count":  0,
+					}).Error; err != nil {
 					return err
 				}
 
-				// 创建退款订单记录
-				orderName := "红包退款"
-				if envelope.Greeting != "" {
-					orderName = fmt.Sprintf("红包退款-%s", envelope.Greeting)
-				}
-				order := model.Order{
-					OrderName:   orderName,
-					PayerUserID: envelope.CreatorID,
-					PayeeUserID: envelope.CreatorID,
-					Amount:      envelope.RemainingAmount,
-					Status:      model.OrderStatusSuccess,
-					Type:        model.OrderTypeRedEnvelopeRefund,
-					Remark:      fmt.Sprintf("红包过期退款，红包ID:%d", envelope.ID),
-					TradeTime:   time.Now(),
-					ExpiresAt:   time.Now().Add(24 * time.Hour),
-				}
+				// 退还剩余金额给创建者
+				if envelope.RemainingAmount.IsPositive() {
+					// 增加余额并更新total_receive
+					if err := service.UpdateBalance(tx, service.BalanceUpdateOptions{
+						UserID:     envelope.CreatorID,
+						Amount:     envelope.RemainingAmount,
+						Operation:  service.BalanceAdd,
+						TotalField: "total_receive",
+					}); err != nil {
+						return err
+					}
 
-				if err := tx.Create(&order).Error; err != nil {
-					return err
-				}
+					// 创建退款订单记录
+					remarkMsg := fmt.Sprintf("红包过期退款，红包ID:%d", envelope.ID)
+					if envelope.Greeting != "" {
+						remarkMsg = fmt.Sprintf("%s，祝福语: %s", remarkMsg, envelope.Greeting)
+					}
 
-				logger.InfoF(ctx, "红包ID:%d 退款成功，金额:%s", envelope.ID, envelope.RemainingAmount.String())
-			}
+					order := model.Order{
+						OrderName:   "红包退款",
+						PayerUserID: 0,
+						PayeeUserID: envelope.CreatorID,
+						Amount:      envelope.RemainingAmount,
+						Status:      model.OrderStatusSuccess,
+						Type:        model.OrderTypeRedEnvelopeRefund,
+						Remark:      remarkMsg,
+						TradeTime:   time.Now(),
+						ExpiresAt:   time.Now().Add(24 * time.Hour),
+					}
+
+					if err := tx.Create(&order).Error; err != nil {
+						return err
+					}
+
+					logger.InfoF(ctx, "红包ID:%d 退款成功，金额:%s", envelope.ID, envelope.RemainingAmount.String())
+				}
 
 				return nil
 			}); err != nil {

@@ -41,7 +41,7 @@ export function RedEnvelope() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [isPasswordOpen, setIsPasswordOpen] = useState(false)
   const [isResultOpen, setIsResultOpen] = useState(false)
-  const [copiedId, setCopiedId] = useState<number | null>(null)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'sent' | 'received'>('sent')
 
   /* 表单状态 */
@@ -177,13 +177,15 @@ export function RedEnvelope() {
         type,
         total_amount: parseFloat(totalAmount),
         total_count: parseInt(totalCount),
-        greeting: greeting || undefined,
+        greeting: greeting || "恭喜发财，大吉大利",
         pay_key: password,
       }
 
       const result = await services.redEnvelope.create(data)
       
-      setResultLink(result.link)
+      // 前端生成链接
+      const link = getEnvelopeLink(result.id)
+      setResultLink(link)
       setIsPasswordOpen(false)
       setIsResultOpen(true)
 
@@ -205,7 +207,7 @@ export function RedEnvelope() {
   }
 
   /* 复制链接 */
-  const handleCopyLink = async (link: string, envelopeId: number) => {
+  const handleCopyLink = async (link: string, envelopeId: string) => {
     try {
       await navigator.clipboard.writeText(link)
       setCopiedId(envelopeId)
@@ -257,7 +259,7 @@ export function RedEnvelope() {
   }
 
   /* 生成红包链接 */
-  const getEnvelopeLink = (id: number) => {
+  const getEnvelopeLink = (id: string) => {
     if (typeof window !== 'undefined') {
       return `${window.location.origin}/redenvelope/${id}`
     }
@@ -634,9 +636,9 @@ export function RedEnvelope() {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => handleCopyLink(resultLink, 0)}
+                onClick={() => handleCopyLink(resultLink, "result")}
               >
-                {copiedId === 0 ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                {copiedId === "result" ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               </Button>
             </div>
           </div>

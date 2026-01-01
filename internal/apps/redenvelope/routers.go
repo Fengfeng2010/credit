@@ -26,10 +26,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/linux-do/credit/internal/apps/oauth"
 	"github.com/linux-do/credit/internal/common"
-	"github.com/linux-do/credit/internal/config"
 	"github.com/linux-do/credit/internal/db"
 	"github.com/linux-do/credit/internal/db/idgen"
 	"github.com/linux-do/credit/internal/model"
+	"github.com/linux-do/credit/internal/service"
 	"github.com/linux-do/credit/internal/util"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
@@ -47,9 +47,7 @@ type CreateRequest struct {
 
 // CreateResponse 创建红包响应
 type CreateResponse struct {
-	ID   uint64 `json:"id"`
-	Code string `json:"code"`
-	Link string `json:"link"`
+	ID uint64 `json:"id,string"`
 }
 
 // ClaimRequest 领取红包请求
@@ -79,10 +77,10 @@ type ListRequest struct {
 
 // ListResponse 红包列表响应
 type ListResponse struct {
-	Total        int64                `json:"total"`
-	Page         int                  `json:"page"`
-	PageSize     int                  `json:"page_size"`
-	RedEnvelopes []model.RedEnvelope  `json:"red_envelopes"`
+	Total        int64               `json:"total"`
+	Page         int                 `json:"page"`
+	PageSize     int                 `json:"page_size"`
+	RedEnvelopes []model.RedEnvelope `json:"red_envelopes"`
 }
 
 // Create 创建红包
@@ -93,17 +91,6 @@ type ListResponse struct {
 // @Success 200 {object} util.ResponseAny
 // @Router /api/v1/redenvelope/create [post]
 func Create(c *gin.Context) {
-	// 检查红包功能是否启用
-	enabled, err := model.IsRedEnvelopeEnabled(c.Request.Context())
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, util.Err(err.Error()))
-		return
-	}
-	if !enabled {
-		c.JSON(http.StatusForbidden, util.Err(common.RedEnvelopeDisabled))
-		return
-	}
-
 	var req CreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, util.Err(err.Error()))
@@ -116,7 +103,7 @@ func Create(c *gin.Context) {
 	}
 
 	// 检查单个红包最大金额限制
-	maxAmount, err := model.GetRedEnvelopeMaxAmount(c.Request.Context())
+	maxAmount, err := model.GetDecimalByKey(c.Request.Context(), model.ConfigKeyRedEnvelopeMaxAmount, 2)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, util.Err(err.Error()))
 		return
@@ -138,12 +125,12 @@ func Create(c *gin.Context) {
 	currentUser, _ := util.GetFromContext[*model.User](c, oauth.UserObjKey)
 
 	// 检查每日红包发送数量限制
-	dailyLimit, err := model.GetRedEnvelopeDailyLimit(c.Request.Context())
+	dailyLimit, err := model.GetIntByKey(c.Request.Context(), model.ConfigKeyRedEnvelopeDailyLimit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, util.Err(err.Error()))
 		return
 	}
-	
+
 	// 查询今日已发送的红包数量
 	var todayCount int64
 	today := time.Now().Truncate(24 * time.Hour)
@@ -153,7 +140,7 @@ func Create(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, util.Err(err.Error()))
 		return
 	}
-	
+
 	if todayCount >= int64(dailyLimit) {
 		c.JSON(http.StatusBadRequest, util.Err(common.RedEnvelopeDailyLimitExceeded))
 		return
@@ -165,15 +152,15 @@ func Create(c *gin.Context) {
 	}
 
 	// 获取红包手续费率并计算手续费
-	feeRate, err := model.GetRedEnvelopeFeeRate(c.Request.Context())
+	feeRate, err := model.GetDecimalByKey(c.Request.Context(), model.ConfigKeyRedEnvelopeFeeRate, 2)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, util.Err(err.Error()))
 		return
 	}
-	
+
 	// 计算手续费（红包金额 * 费率）
 	feeAmount := req.TotalAmount.Mul(feeRate).Round(2)
-	
+
 	// 总扣款金额 = 红包金额 + 手续费
 	totalDeduction := req.TotalAmount.Add(feeAmount)
 
@@ -186,17 +173,15 @@ func Create(c *gin.Context) {
 	var redEnvelope model.RedEnvelope
 
 	if err := db.DB(c.Request.Context()).Transaction(func(tx *gorm.DB) error {
-		// 使用乐观锁扣减余额，扣除红包金额+手续费
-		result := tx.Model(&model.User{}).
-			Where("id = ? AND available_balance >= ?", currentUser.ID, totalDeduction).
-			Update("available_balance", gorm.Expr("available_balance - ?", totalDeduction))
-		
-		if result.Error != nil {
-			return result.Error
-		}
-		
-		if result.RowsAffected == 0 {
-			return errors.New(common.InsufficientBalance)
+		// 扣减发送者余额并更新total_payment
+		if err := service.UpdateBalance(tx, service.BalanceUpdateOptions{
+			UserID:       currentUser.ID,
+			Amount:       totalDeduction,
+			Operation:    service.BalanceDeduct,
+			TotalField:   "total_payment",
+			CheckBalance: true,
+		}); err != nil {
+			return err
 		}
 
 		// 创建红包
@@ -222,11 +207,13 @@ func Create(c *gin.Context) {
 		if feeAmount.GreaterThan(decimal.Zero) {
 			remarkMsg = fmt.Sprintf("%s，手续费: %s", remarkMsg, feeAmount.String())
 		}
-		
+		if req.Greeting != "" {
+			remarkMsg = fmt.Sprintf("%s，祝福语: %s", remarkMsg, req.Greeting)
+		}
+
 		order := model.Order{
-			OrderName:   fmt.Sprintf("红包支出-%s", req.Greeting),
+			OrderName:   "红包支出",
 			PayerUserID: currentUser.ID,
-			PayeeUserID: currentUser.ID, // 红包支出时，收款人也是自己
 			Amount:      totalDeduction,
 			Status:      model.OrderStatusSuccess,
 			Type:        model.OrderTypeRedEnvelopeSend,
@@ -246,9 +233,7 @@ func Create(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, util.OK(CreateResponse{
-		ID:   redEnvelope.ID,
-		Code: strconv.FormatUint(redEnvelope.ID, 10),
-		Link: fmt.Sprintf("%s/redenvelope/%d", config.Config.App.FrontendURL, redEnvelope.ID),
+		ID: redEnvelope.ID,
 	}))
 }
 
@@ -260,17 +245,6 @@ func Create(c *gin.Context) {
 // @Success 200 {object} util.ResponseAny
 // @Router /api/v1/redenvelope/claim [post]
 func Claim(c *gin.Context) {
-	// 检查红包功能是否启用
-	enabled, err := model.IsRedEnvelopeEnabled(c.Request.Context())
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, util.Err(err.Error()))
-		return
-	}
-	if !enabled {
-		c.JSON(http.StatusForbidden, util.Err(common.RedEnvelopeDisabled))
-		return
-	}
-
 	var req ClaimRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, util.Err(err.Error()))
@@ -286,9 +260,9 @@ func Claim(c *gin.Context) {
 		// 解析红包ID
 		redEnvelopeID, err := strconv.ParseUint(req.ID, 10, 64)
 		if err != nil {
-			return errors.New("红包ID格式错误")
+			return errors.New(InvalidRedEnvelopeID)
 		}
-		
+
 		// 使用 FOR UPDATE 锁定红包记录，防止并发领取
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE", Options: "NOWAIT"}).
 			Where("id = ?", redEnvelopeID).First(&redEnvelope).Error; err != nil {
@@ -296,11 +270,7 @@ func Claim(c *gin.Context) {
 				return errors.New(RedEnvelopeNotFound)
 			}
 			// 捕获锁等待超时错误，返回友好提示
-			errMsg := err.Error()
-			if errMsg != "" {
-				return errors.New("太火爆啦，稍后再试试吧~")
-			}
-			return err
+			return errors.New(RedEnvelopeTooPopular)
 		}
 
 		// 检查红包状态
@@ -365,21 +335,25 @@ func Claim(c *gin.Context) {
 		redEnvelope.RemainingAmount = newRemainingAmount
 		redEnvelope.Status = newStatus
 
-		// 增加用户余额
-		if err := tx.Model(&model.User{}).Where("id = ?", currentUser.ID).
-			Update("available_balance", gorm.Expr("available_balance + ?", claimedAmount)).Error; err != nil {
+		// 增加领取者余额并更新total_receive
+		if err := service.UpdateBalance(tx, service.BalanceUpdateOptions{
+			UserID:     currentUser.ID,
+			Amount:     claimedAmount,
+			Operation:  service.BalanceAdd,
+			TotalField: "total_receive",
+		}); err != nil {
 			return err
 		}
 
 		// 创建订单记录（红包收入）
 		order := model.Order{
-			OrderName:   fmt.Sprintf("红包收入-%s", redEnvelope.Greeting),
+			OrderName:   "红包收入",
 			PayerUserID: redEnvelope.CreatorID,
 			PayeeUserID: currentUser.ID,
 			Amount:      claimedAmount,
 			Status:      model.OrderStatusSuccess,
 			Type:        model.OrderTypeRedEnvelopeReceive,
-			Remark:      fmt.Sprintf("领取红包，来自创建者ID:%d", redEnvelope.CreatorID),
+			Remark:      fmt.Sprintf("祝福语: %s", redEnvelope.Greeting),
 			TradeTime:   time.Now(),
 			ExpiresAt:   time.Now().Add(24 * time.Hour),
 		}
@@ -414,10 +388,10 @@ func GetDetail(c *gin.Context) {
 	idStr := c.Param("id")
 	redEnvelopeID, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, util.Err("红包ID格式错误"))
+		c.JSON(http.StatusBadRequest, util.Err(InvalidRedEnvelopeID))
 		return
 	}
-	
+
 	currentUser, _ := util.GetFromContext[*model.User](c, oauth.UserObjKey)
 
 	var redEnvelope model.RedEnvelope
@@ -503,4 +477,3 @@ func List(c *gin.Context) {
 		RedEnvelopes: redEnvelopes,
 	}))
 }
-

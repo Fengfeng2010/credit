@@ -18,9 +18,9 @@ export type RedEnvelopeStatus = 'active' | 'finished' | 'expired';
  */
 export interface RedEnvelope {
   /** 红包 ID */
-  id: number;
+  id: string;
   /** 创建者用户 ID */
-  creator_id: number;
+  creator_id: string;
   /** 创建者用户名 */
   creator_username: string;
   /** 创建者头像 URL */
@@ -49,12 +49,12 @@ export interface RedEnvelope {
  * 红包领取记录
  */
 export interface RedEnvelopeClaim {
-  /** 记录 ID */
-  id: number;
-  /** 红包 ID */
-  red_envelope_id: number;
-  /** 领取者用户 ID */
-  user_id: number;
+  /** 记录 ID (作为字符串以避免 JS 精度问题) */
+  id: string;
+  /** 红包 ID (作为字符串以避免 JS 精度问题) */
+  red_envelope_id: string;
+  /** 领取者用户 ID (作为字符串以避免 JS 精度问题) */
+  user_id: string;
   /** 领取者用户名 */
   username: string;
   /** 领取者头像 URL */
@@ -85,12 +85,8 @@ export interface CreateRedEnvelopeRequest {
  * 创建红包响应
  */
 export interface CreateRedEnvelopeResponse {
-  /** 红包 ID */
-  id: number;
-  /** 红包唯一码 */
-  code: string;
-  /** 分享链接 */
-  link: string;
+  /** 红包 ID (作为字符串以避免 JS 精度问题) */
+  id: string;
 }
 
 /**

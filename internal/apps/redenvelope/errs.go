@@ -17,13 +17,15 @@ limitations under the License.
 package redenvelope
 
 const (
-	RedEnvelopeNotFound      = "红包不存在"
-	RedEnvelopeExpired       = "红包已过期"
-	RedEnvelopeFinished      = "红包已领完"
+	RedEnvelopeNotFound       = "红包不存在"
+	RedEnvelopeExpired        = "红包已过期"
+	RedEnvelopeFinished       = "红包已领完"
 	RedEnvelopeAlreadyClaimed = "您已领取过该红包"
 	CannotClaimOwnRedEnvelope = "不能领取自己的红包"
-	InvalidRedEnvelopeType   = "无效的红包类型"
-	InvalidRedEnvelopeCount  = "红包个数必须大于0"
-	InvalidRedEnvelopeAmount = "红包金额必须大于0"
-	AmountTooSmall           = "每个红包金额不能小于0.01"
+	InvalidRedEnvelopeType    = "无效的红包类型"
+	InvalidRedEnvelopeCount   = "红包个数必须大于0"
+	InvalidRedEnvelopeAmount  = "红包金额必须大于0"
+	AmountTooSmall            = "每个红包金额不能小于0.01"
+	RedEnvelopeTooPopular     = "太火爆啦，稍后再试试吧~"
+	InvalidRedEnvelopeID      = "红包ID格式错误"
 )
