@@ -30,13 +30,11 @@ func CheckRedEnvelopeEnabled() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		enabled, err := model.GetIntByKey(c.Request.Context(), model.ConfigKeyRedEnvelopeEnabled)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, util.Err(err.Error()))
-			c.Abort()
+			c.AbortWithStatusJSON(http.StatusInternalServerError, util.Err(err.Error()))
 			return
 		}
 		if enabled != 1 {
-			c.JSON(http.StatusForbidden, util.Err(common.RedEnvelopeDisabled))
-			c.Abort()
+			c.AbortWithStatusJSON(http.StatusForbidden, util.Err(common.RedEnvelopeDisabled))
 			return
 		}
 		c.Next()

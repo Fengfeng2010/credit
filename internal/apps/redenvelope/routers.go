@@ -52,7 +52,7 @@ type CreateResponse struct {
 
 // ClaimRequest 领取红包请求
 type ClaimRequest struct {
-	ID string `json:"id" binding:"required"`
+	ID uint64 `json:"id,string" binding:"required"`
 }
 
 // ClaimResponse 领取红包响应
@@ -257,15 +257,9 @@ func Claim(c *gin.Context) {
 	var redEnvelope model.RedEnvelope
 
 	if err := db.DB(c.Request.Context()).Transaction(func(tx *gorm.DB) error {
-		// 解析红包ID
-		redEnvelopeID, err := strconv.ParseUint(req.ID, 10, 64)
-		if err != nil {
-			return errors.New(InvalidRedEnvelopeID)
-		}
-
 		// 使用 FOR UPDATE 锁定红包记录，防止并发领取
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE", Options: "NOWAIT"}).
-			Where("id = ?", redEnvelopeID).First(&redEnvelope).Error; err != nil {
+			Where("id = ?", req.ID).First(&redEnvelope).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return errors.New(RedEnvelopeNotFound)
 			}

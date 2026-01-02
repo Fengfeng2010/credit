@@ -344,6 +344,7 @@ definitions:
   redenvelope.ClaimRequest:
     properties:
       id:
+        example: "0"
         type: string
     required:
     - id

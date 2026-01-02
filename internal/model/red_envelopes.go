@@ -58,8 +58,8 @@ type RedEnvelope struct {
 // RedEnvelopeClaim 红包领取记录
 type RedEnvelopeClaim struct {
 	ID            uint64          `json:"id,string" gorm:"primaryKey"`
-	RedEnvelopeID uint64          `json:"red_envelope_id,string" gorm:"uniqueIndex:idx_red_envelope_user,priority:1;not null"`
-	UserID        uint64          `json:"user_id,string" gorm:"uniqueIndex:idx_red_envelope_user,priority:2;not null"`
+	RedEnvelopeID uint64          `json:"red_envelope_id,string" gorm:"uniqueIndex:idx_red_envelope_user,priority:2;not null"`
+	UserID        uint64          `json:"user_id,string" gorm:"uniqueIndex:idx_red_envelope_user,priority:1;not null"`
 	Username      string          `json:"username" gorm:"-:migration;->"`
 	AvatarURL     string          `json:"avatar_url" gorm:"-:migration;->"`
 	Amount        decimal.Decimal `json:"amount" gorm:"type:numeric(20,2);not null"`

@@ -2025,7 +2025,8 @@ const docTemplate = `{
             ],
             "properties": {
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "0"
                 }
             }
         },
