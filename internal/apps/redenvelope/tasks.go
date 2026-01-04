@@ -78,12 +78,12 @@ func refundExpiredRedEnvelopes(ctx context.Context) {
 
 				// 退还剩余金额给创建者
 				if envelope.RemainingAmount.IsPositive() {
-					// 增加余额并更新total_receive
+					// 增加余额并减少total_payment
 					if err := service.UpdateBalance(tx, service.BalanceUpdateOptions{
 						UserID:     envelope.CreatorID,
-						Amount:     envelope.RemainingAmount,
-						Operation:  service.BalanceAdd,
-						TotalField: "total_receive",
+						Amount:     envelope.RemainingAmount.Neg(),
+						Operation:  service.BalanceDeduct,
+						TotalField: "total_payment",
 					}); err != nil {
 						return err
 					}
