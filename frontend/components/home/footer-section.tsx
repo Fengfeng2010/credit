@@ -12,7 +12,7 @@ export interface FooterSectionProps {
  */
 export const FooterSection = React.memo(function FooterSection({ className }: FooterSectionProps) {
   return (
-    <footer className={cn("relative z-10 w-full bg-transparent border-t border-white/10 mt-0 backdrop-blur-sm snap-start", className)}>
+    <footer className={cn("relative z-10 w-full bg-transparent border-t border-white/10 mt-0 backdrop-blur-sm", className)}>
       <div className="container mx-auto max-w-7xl px-6 py-20 lg:py-32">
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8 mb-20">
@@ -71,7 +71,7 @@ export const FooterSection = React.memo(function FooterSection({ className }: Fo
       </div>
 
       <div className="absolute bottom-0 left-0 w-full overflow-hidden pointer-events-none opacity-[0.02]">
-        <div className="text-[15vw] font-black leading-none text-foreground whitespace-nowrap select-none text-center transform translate-y-1/3">
+        <div className="text-[12vw] 2xl:text-[180px] font-black leading-none text-foreground whitespace-nowrap select-none text-center transform translate-y-1/3 transition-all duration-700">
           LINUX DO Credit
         </div>
       </div>
