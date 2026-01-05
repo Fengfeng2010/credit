@@ -146,6 +146,12 @@ export function RedEnvelope() {
     }
 
     const amount = parseFloat(totalAmount)
+
+    // 检查红包最低金额限制（1 LDC）
+    if (amount < 1) {
+      toast.error("红包总金额不能低于1 LDC")
+      return
+    }
     
     // 检查红包最大金额限制
     if (config && parseFloat(config.red_envelope_max_amount) > 0) {
@@ -154,9 +160,18 @@ export function RedEnvelope() {
         return
       }
     }
+
+    // 检查红包最大领取人数限制
+    if (config && config.red_envelope_max_recipients > 0) {
+      if (count > config.red_envelope_max_recipients) {
+        toast.error(`红包个数不能超过 ${config.red_envelope_max_recipients} 个`)
+        return
+      }
+    }
     
-    if (type === "fixed" && amount / count < 0.01) {
-      toast.error("每个红包金额不能小于0.01")
+    // 检查每个红包平均金额不能小于0.01
+    if (amount / count < 0.01) {
+      toast.error("每个红包平均金额不能小于0.01 LDC")
       return
     }
 
@@ -516,13 +531,9 @@ export function RedEnvelope() {
                     disabled={loading}
                   />
                 </div>
-                {config && parseFloat(config.red_envelope_max_amount) > 0 ? (
-                  <p className="text-xs text-muted-foreground">
-                    最大 {config.red_envelope_max_amount} LDC
-                  </p>
-                ) : (
-                  <p className="text-xs text-muted-foreground invisible">6565</p>
-                )}
+                <p className="text-xs text-muted-foreground">
+                  最低 1 LDC{config && parseFloat(config.red_envelope_max_amount) > 0 ? `，最大 ${config.red_envelope_max_amount} LDC` : ''}
+                </p>
               </div>
 
               <div className="grid gap-2">
@@ -531,12 +542,19 @@ export function RedEnvelope() {
                   id="totalCount"
                   type="number"
                   min="1"
+                  max={config?.red_envelope_max_recipients || undefined}
                   placeholder="1"
                   value={totalCount}
                   onChange={(e) => setTotalCount(e.target.value)}
                   disabled={loading}
                 />
-                <p className="text-xs text-muted-foreground invisible">占位</p>
+                {config && config.red_envelope_max_recipients > 0 ? (
+                  <p className="text-xs text-muted-foreground">
+                    最多 {config.red_envelope_max_recipients} 个
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground invisible">占位</p>
+                )}
               </div>
             </div>
 
@@ -587,7 +605,7 @@ export function RedEnvelope() {
             </Button>
             <Button
               onClick={handleFormSubmit}
-              disabled={!totalAmount || !totalCount || loading}
+              disabled={!totalAmount || !totalCount || loading || !!(config && config.red_envelope_max_recipients > 0 && parseInt(totalCount) > config.red_envelope_max_recipients)}
               className="bg-red-500 hover:bg-red-600 h-8 text-xs"
             >
               下一步
