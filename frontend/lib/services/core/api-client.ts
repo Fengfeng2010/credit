@@ -122,7 +122,7 @@ apiClient.interceptors.response.use(
     /* 403 权限不足错误 */
     if (error.response?.status === 403) {
       return Promise.reject(
-        new ForbiddenError(error.response.data?.error_msg || '权限不足'),
+        new ForbiddenError(error.response.data?.error_msg || '权限不足，请过盾后重试'),
       );
     }
 
