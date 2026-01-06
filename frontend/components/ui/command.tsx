@@ -173,7 +173,7 @@ function CommandItem({
     <CommandPrimitive.Item
       data-slot="command-item"
       className={cn(
-        "data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground relative flex cursor-pointer items-center gap-3 rounded-md px-4 py-3 text-sm outline-hidden select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5 data-[selected=true]:before:absolute data-[selected=true]:before:left-0 data-[selected=true]:before:h-full data-[selected=true]:before:w-1 data-[selected=true]:before:bg-primary data-[selected=true]:before:content-[''] overflow-hidden animate-in fade-in-0 slide-in-from-top-1 duration-200",
+        "data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground relative flex cursor-pointer items-center gap-3 rounded-md px-4 py-3 text-sm outline-hidden select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5 data-[selected=true]:before:absolute data-[selected=true]:before:left-0 data-[selected=true]:before:h-full data-[selected=true]:before:w-1 data-[selected=true]:before:bg-primary data-[selected=true]:before:content-[''] overflow-hidden",
         className
       )}
       {...props}
