@@ -1,5 +1,5 @@
 /*
-Copyright 2025 linux.do
+Copyright 2025-2026 linux.do
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -80,6 +80,7 @@ func init() {
 			tracing.WithAttributes(
 				attribute.String("db.instance", dbConfig.Database),
 				attribute.String("db.ip", dbConfig.Host),
+				attribute.String("server.address", net.JoinHostPort(dbConfig.Host, strconv.Itoa(dbConfig.Port))),
 				attribute.String("db.system", "PostgreSQL"),
 			),
 		),
