@@ -32,10 +32,48 @@ const categoryLabels = {
   admin: '管理',
 }
 
+const tips = [
+  (
+    <>
+      <span className="text-muted-foreground/80 lowercase">Tips: 还可以使用</span>
+      <kbd className="bg-muted px-1.5 py-0.5 rounded border shadow-sm text-foreground mx-1">/</kbd>
+      <span className="text-muted-foreground/80 lowercase">来打开此界面</span>
+    </>
+  ),
+  (
+    <>
+      <span className="text-muted-foreground/80 lowercase">Tips: 使用</span>
+      <kbd className="bg-muted px-1.5 py-0.5 rounded border shadow-sm text-foreground mx-1">↑</kbd>
+      <kbd className="bg-muted px-1.5 py-0.5 rounded border shadow-sm text-foreground mx-1">↓</kbd>
+      <span className="text-muted-foreground/80 lowercase">来切换选中项</span>
+    </>
+  ),
+  (
+    <>
+      <span className="text-muted-foreground/80 lowercase">Tips: 按下</span>
+      <kbd className="bg-muted px-1.5 py-0.5 rounded border shadow-sm text-foreground mx-1">Enter</kbd>
+      <span className="text-muted-foreground/80 lowercase">来跳转到对应页面</span>
+    </>
+  ),
+  (
+    <>
+      <span className="text-muted-foreground/80 lowercase">你知道吗：搜索功能还在持续升级中</span>
+    </>
+  )
+]
+
 export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   const router = useRouter()
   const [search, setSearch] = useState('')
+  const [currentTip, setCurrentTip] = useState<React.ReactNode>(tips[0])
   const [results, setResults] = useState<SearchItem[]>([])
+
+  useEffect(() => {
+    if (open) {
+      const randomTip = tips[Math.floor(Math.random() * tips.length)]
+      setCurrentTip(randomTip)
+    }
+  }, [open])
 
   useEffect(() => {
     const items = searchItems(search)
@@ -123,9 +161,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
           <span>关闭搜索界面</span>
         </div>
         <div className="ml-auto flex items-center gap-1">
-          <span className="text-muted-foreground/80 lowercase">Tips: 还可以使用</span>
-          <kbd className="bg-muted px-1.5 py-0.5 rounded border shadow-sm text-foreground">/</kbd>
-          <span className="text-muted-foreground/80 lowercase">来打开此界面</span>
+          {currentTip}
         </div>
       </div>
     </CommandDialog>
