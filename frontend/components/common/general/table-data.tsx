@@ -19,6 +19,7 @@ import {
   ViewDisputeHistoryDialog,
   RefundReviewDialog,
 } from "./dispute-dialog"
+import { useUser } from "@/contexts/user-context"
 
 const ROW_HEIGHT = 36
 
@@ -125,6 +126,8 @@ const TransactionTableRow = React.memo(React.forwardRef<HTMLTableRowElement, {
 
   const isDisputing = order.type === 'receive' && order.status === 'disputing'
 
+  const { user } = useUser()
+
   return (
     <TableRow
       ref={ref}
@@ -230,7 +233,7 @@ const TransactionTableRow = React.memo(React.forwardRef<HTMLTableRowElement, {
         <OrderDetailDialog order={order} />
 
         {/* 场景1：付款方对成功的订单发起争议 (支持 payment 和 online 类型) */}
-        {(order.type === 'payment' || order.type === 'online') && order.status === 'success' && (
+        {(order.type === 'payment' || order.type === 'online') && order.status === 'success' && user?.username == order.payer_username && (
           <CreateDisputeDialog order={order} />
         )}
 
