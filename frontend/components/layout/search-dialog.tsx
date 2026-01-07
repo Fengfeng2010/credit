@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/command"
 import { searchItems, type SearchItem } from "@/lib/utils/search-data"
 import { Home, Settings, FileText, Shield } from "lucide-react"
+import { useUser } from "@/contexts/user-context"
 
 interface SearchDialogProps {
   open: boolean
@@ -71,6 +72,7 @@ const tips = [
 
 export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   const router = useRouter()
+  const { user } = useUser()
   const [search, setSearch] = useState('')
   const [currentTip, setCurrentTip] = useState<React.ReactNode>(tips[0])
   const [results, setResults] = useState<SearchItem[]>([])
@@ -83,9 +85,9 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   }, [open])
 
   useEffect(() => {
-    const items = searchItems(search)
+    const items = searchItems(search, user?.is_admin)
     setResults(items)
-  }, [search])
+  }, [search, user?.is_admin])
 
   const handleSelect = useCallback((item: SearchItem) => {
     onOpenChange(false)

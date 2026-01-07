@@ -495,17 +495,24 @@ const searchIndex: Map<string, string> = new Map(
 /**
  * 搜索功能
  * @param query 搜索关键词
+ * @param isAdmin 是否为管理员
  * @returns 匹配的搜索结果
  */
-export function searchItems(query: string): SearchItem[] {
+export function searchItems(query: string, isAdmin: boolean = false): SearchItem[] {
   const trimmedQuery = query.trim()
+  
+  // 非管理员不能搜索 admin 类别项
+  const filteredData = isAdmin 
+    ? searchData 
+    : searchData.filter(item => item.category !== 'admin')
+
   if (!trimmedQuery) {
-    return searchData
+    return filteredData
   }
 
   const lowerQuery = trimmedQuery.toLowerCase()
 
-  return searchData.filter((item) => {
+  return filteredData.filter((item) => {
     const searchText = searchIndex.get(item.id)
     return searchText ? searchText.includes(lowerQuery) : false
   })
