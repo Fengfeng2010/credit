@@ -122,6 +122,11 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
           <kbd className="bg-muted px-1.5 py-0.5 rounded border shadow-sm text-foreground">Esc</kbd>
           <span>关闭搜索界面</span>
         </div>
+        <div className="ml-auto flex items-center gap-1">
+          <span className="text-muted-foreground/80 lowercase">Tips: 还可以使用</span>
+          <kbd className="bg-muted px-1.5 py-0.5 rounded border shadow-sm text-foreground">/</kbd>
+          <span className="text-muted-foreground/80 lowercase">来打开此界面</span>
+        </div>
       </div>
     </CommandDialog>
   )
