@@ -54,7 +54,7 @@ const getTips = (metaKey: string) => [
       <span className="text-muted-foreground/80 lowercase">Tips: 按住</span>
       <kbd className="bg-muted px-1.5 py-0.5 rounded border shadow-sm text-foreground mx-1">{metaKey}</kbd>
       <span className="text-muted-foreground/80 lowercase">+</span>
-      <kbd className="bg-muted px-1.5 py-0.5 rounded border shadow-sm text-foreground mx-1">Enter</kbd>
+      <kbd className="bg-muted px-1.5 py-0.5 rounded border shadow-sm text-foreground mx-1">↵</kbd>
       <span className="text-muted-foreground/80 lowercase">在新标签页打开</span>
     </>
   ),
