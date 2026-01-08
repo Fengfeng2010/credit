@@ -246,12 +246,20 @@ export function ProfileMain() {
   const [levelConfigs, setLevelConfigs] = React.useState<LevelConfig[]>([])
 
   const controls = useAnimation()
+  const isAnimatingRef = React.useRef(false)
 
   const handleAvatarClick = () => {
+    if (isAnimatingRef.current) return
+    
+    isAnimatingRef.current = true
     controls.start({
       rotate: [0, -20, 20, -20, 20, 0],
       transition: { duration: 0.5, ease: "easeInOut" }
     })
+    
+    setTimeout(() => {
+      isAnimatingRef.current = false
+    }, 650)
   }
 
   const score = user?.pay_score ?? 0
