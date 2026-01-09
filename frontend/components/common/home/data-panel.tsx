@@ -185,8 +185,10 @@ export function DataPanel() {
           <div className="text-sm text-muted-foreground font-medium flex items-center gap-1 whitespace-nowrap">
             可用 LINUX DO Credits
             <Popover>
-              <PopoverTrigger>
-                <Info className="size-3.5 cursor-pointer" />
+              <PopoverTrigger asChild>
+                <button type="button" aria-label="查看详情">
+                  <Info className="size-3.5 cursor-pointer" />
+                </button>
               </PopoverTrigger>
               <PopoverContent side="top" className="w-auto max-w-[280px] p-3">
                 <p className="text-xs">社区基准分数(上一次从社区同步的积分基准值): {userLoading ? '-' : communityBalance} </p>
@@ -202,8 +204,10 @@ export function DataPanel() {
           <div className="text-sm text-muted-foreground font-medium flex items-center gap-1 whitespace-nowrap">
             今日剩余额度
             <Popover>
-              <PopoverTrigger>
-                <Info className="size-3.5 cursor-pointer" />
+              <PopoverTrigger asChild>
+                <button type="button" aria-label="查看详情">
+                  <Info className="size-3.5 cursor-pointer" />
+                </button>
               </PopoverTrigger>
               <PopoverContent side="top" className="w-auto max-w-[280px] p-3">
                 <p className="text-xs">每日积分消耗额度限制，每日 0 点自动重置</p>
