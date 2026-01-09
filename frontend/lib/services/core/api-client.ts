@@ -1,4 +1,5 @@
 import axios, { AxiosError, AxiosResponse, CancelTokenSource, InternalAxiosRequestConfig } from 'axios';
+import { toast } from 'sonner';
 import { apiConfig } from './config';
 import {
   ApiErrorBase,
@@ -140,6 +141,22 @@ apiClient.interceptors.response.use(
           error.response.data?.error_msg || '请求参数验证失败',
           error.response.data?.details,
         ),
+      );
+    }
+
+    /* 429 速率限制错误 */
+    if (error.response?.status === 429) {
+      const retryAfter = error.response.headers?.['retry-after'];
+      const message = error.response.data?.error_msg ||
+        `请求过于频繁，请 ${ retryAfter || '稍后' } 秒后重试`;
+
+      toast.error('请求频率限制', {
+        description: message,
+        id: 'rate-limit-error',
+      });
+
+      return Promise.reject(
+        new ApiErrorBase(message, 'RATE_LIMITED', 429),
       );
     }
 
