@@ -127,6 +127,7 @@ const TransactionTableRow = React.memo(React.forwardRef<HTMLTableRowElement, {
   const isDisputeSupported = order.type === 'payment' || order.type === 'online' || order.type === 'receive'
   const isCurrentUserPayer = user?.id === order.payer_user_id
   const isCurrentUserPayee = user?.id === order.payee_user_id
+  const isCurrentTesting = order.payee_user_id === order.payer_user_id
   const isDisputing = order.status === 'disputing' && isCurrentUserPayee
 
   return (
@@ -234,7 +235,7 @@ const TransactionTableRow = React.memo(React.forwardRef<HTMLTableRowElement, {
         <OrderDetailDialog order={order} />
 
         {/* 场景1：消费方对成功的订单发起争议 */}
-        {isDisputeSupported && isCurrentUserPayer && order.status === 'success' && (
+        {isDisputeSupported && (isCurrentUserPayer || isCurrentTesting) && order.status === 'success' && (
           <CreateDisputeDialog order={order} />
         )}
 
