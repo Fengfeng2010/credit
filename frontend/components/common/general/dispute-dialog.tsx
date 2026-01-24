@@ -403,6 +403,43 @@ export function ViewDisputeHistoryDialog({ order }: { order: Order }) {
     return { userReason: fullReason, merchantReason: null }
   }
 
+  const toolTipText = (() => {
+    switch (order.status) {
+      case 'refused': 
+        return '争议已拒绝，点击查看'
+      case 'refund': 
+        return '争议已退款'
+      case 'disputing': 
+        return '争议处理中，点击查看'
+      default: 
+        return 'w?'
+    }
+  })
+
+  const timeLineText = (() => {
+    switch (order.status) {
+      case 'refused': 
+        return '服务方驳回争议'
+      case 'refund': 
+        return '服务方已退款'
+      case 'disputing':
+        return '争议进行中'
+      default: 
+        return '不知道的状态欸w'
+    }
+  })
+
+  const timeLineContent = (() => {
+    switch (order.status) {
+      case 'refund': 
+        return '退款已完成'
+      case 'disputing': 
+        return '这句应该是被隐藏了呢w'
+      default:
+        return '好神奇w，是什么让这一句显示出来了呢？w）'
+    }
+  })
+
   return (
     <>
       <Tooltip>
@@ -417,7 +454,7 @@ export function ViewDisputeHistoryDialog({ order }: { order: Order }) {
           </Button>
         </TooltipTrigger>
         <TooltipContent side="top">
-          <p>争议已拒绝，点击查看</p>
+          <p>{toolTipText()}</p>
         </TooltipContent>
       </Tooltip>
       <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -445,19 +482,33 @@ export function ViewDisputeHistoryDialog({ order }: { order: Order }) {
                   </div>
                 </div>
               </div>
-
-              <div className="relative">
-                <div className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-destructive ring-4 ring-background" />
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-destructive">服务方驳回争议</span>
-                    <span className="text-xs text-muted-foreground">{formatDateTime(disputeHistory.updated_at)}</span>
-                  </div>
-                  <div className="text-sm text-muted-foreground bg-destructive/5 border border-destructive/10 p-3 rounded-md">
-                    {parseDisputeReason(disputeHistory.reason).merchantReason || "未提供拒绝理由"}
+            { order.status === 'refused'?
+              (
+                <div className="relative">
+                  <div className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-destructive ring-4 ring-background" />
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-destructive">{timeLineText()}</span>
+                      <span className="text-xs text-muted-foreground">{formatDateTime(disputeHistory.updated_at)}</span>
+                    </div>
+                    <div className="text-sm text-muted-foreground bg-destructive/5 border border-destructive/10 p-3 rounded-md">
+                      {parseDisputeReason(disputeHistory.reason).merchantReason || "未提供拒绝理由"}
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="relative">
+                  <div className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-primary ring-4 ring-background" />
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">{timeLineText()}</span>
+                      <span className="text-xs text-muted-foreground">{(order.status !== 'refund') ? "":formatDateTime(disputeHistory.updated_at)}</span>
+                    </div>
+                    {order.status === 'refund' ? <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">{timeLineContent()}</div> : null}
+                  </div>
+                </div>
+              )
+            }
             </div>
           ) : (
             <div className="py-8 text-center text-muted-foreground text-sm">
